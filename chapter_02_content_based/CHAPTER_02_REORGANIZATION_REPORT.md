@@ -84,3 +84,17 @@ The new notebooks map to the Chapter 2 slide topics:
 - SBERT/BERT embeddings: Notebook 05
 - Graph-based content recommendation: Notebook 06
 - Context-aware, explainable, zero-shot, and generative stubs: Notebook 07
+
+## Real-World HTML Demos
+
+Additional standalone visual demos were added under `html_demos/` based on the slide exercises:
+
+- `index.html`
+- `real_world_tfidf_search_demo.html`
+- `semantic_vs_keyword_demo.html`
+- `graph_content_explorer_demo.html`
+- `multimodal_poster_recommender_demo.html`
+- `context_aware_reranking_demo.html`
+- `zero_shot_discovery_demo.html`
+
+These demos use real movie posters, interactive search, context controls, graph visualization, and visual recommendation cards so students can see recommendation behavior rather than only reading code output.

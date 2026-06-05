@@ -161,6 +161,22 @@ MOVIES = [
 ]
 
 
+POSTER_URLS = {
+    "Inception": "https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg",
+    "Interstellar": "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+    "Titanic": "https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg",
+    "The Matrix": "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
+    "Toy Story": "https://image.tmdb.org/t/p/w500/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg",
+    "Finding Nemo": "https://image.tmdb.org/t/p/w500/eHuGQ10FUzK1mdOY69wF5pGgEf5.jpg",
+    "The Dark Knight": "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+    "The Martian": "https://image.tmdb.org/t/p/w500/5BHuvQ6p9kfc091Z8RiFNhCwL4b.jpg",
+    "The Notebook": "https://image.tmdb.org/t/p/w500/qom1SZSENdmHFNZBXbtJAU0WTlC.jpg",
+    "Paddington": "https://image.tmdb.org/t/p/w500/wpchRGhRhvhtU083PfX2yixXtiw.jpg",
+    "Gravity": "https://image.tmdb.org/t/p/w500/kZ2nZw8D681aphje8NJi8EfbL1U.jpg",
+    "La La Land": "https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg",
+}
+
+
 CELL_COUNTER = count(1)
 
 
@@ -1770,12 +1786,19 @@ The examples deliberately use a small dataset so students can inspect intermedia
 
 The `html_demos/` folder contains simple lecture demos:
 
+- `index.html`
+- `real_world_tfidf_search_demo.html`
+- `semantic_vs_keyword_demo.html`
+- `graph_content_explorer_demo.html`
+- `multimodal_poster_recommender_demo.html`
+- `context_aware_reranking_demo.html`
+- `zero_shot_discovery_demo.html`
 - `content_based_filtering_demo.html`
 - `tfidf_similarity_demo.html`
 - `user_profile_ranking_demo.html`
 - `poi_content_based_demo.html`
 
-These are standalone HTML files and can be opened directly in a browser.
+These are standalone HTML files and can be opened directly in a browser. Start with `html_demos/index.html` for the richer real-world demos.
 
 ## Optional Dependencies
 
@@ -1873,6 +1896,20 @@ The new notebooks map to the Chapter 2 slide topics:
 - SBERT/BERT embeddings: Notebook 05
 - Graph-based content recommendation: Notebook 06
 - Context-aware, explainable, zero-shot, and generative stubs: Notebook 07
+
+## Real-World HTML Demos
+
+Additional standalone visual demos were added under `html_demos/` based on the slide exercises:
+
+- `index.html`
+- `real_world_tfidf_search_demo.html`
+- `semantic_vs_keyword_demo.html`
+- `graph_content_explorer_demo.html`
+- `multimodal_poster_recommender_demo.html`
+- `context_aware_reranking_demo.html`
+- `zero_shot_discovery_demo.html`
+
+These demos use real movie posters, interactive search, context controls, graph visualization, and visual recommendation cards so students can see recommendation behavior rather than only reading code output.
 """,
         encoding="utf-8",
     )
@@ -1992,6 +2029,484 @@ const movies = {json.dumps(MOVIES)};
 </body>
 </html>
 """
+
+
+def real_world_html_page(title: str, body: str, script: str) -> str:
+    movie_data = [{**movie, "poster_url": POSTER_URLS.get(movie["title"], "")} for movie in MOVIES]
+    page = """<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>__TITLE__</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --ink: #172033;
+      --muted: #667085;
+      --panel: #ffffff;
+      --line: #d6dbe4;
+      --accent: #155eef;
+      --accent2: #087443;
+      --warn: #b54708;
+      --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    header {
+      background: #101828;
+      color: white;
+      padding: 20px 22px;
+      border-bottom: 4px solid var(--accent);
+    }
+    header h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 38px);
+      letter-spacing: 0;
+    }
+    header p {
+      color: #d0d5dd;
+      max-width: 920px;
+      margin: 8px 0 0;
+      line-height: 1.5;
+    }
+    main { max-width: 1220px; margin: 0 auto; padding: 18px; }
+    .toolbar, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin: 14px 0;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 5px; }
+    input, select, button {
+      width: 100%;
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      background: white;
+      color: var(--ink);
+    }
+    button {
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+    button.secondary { background: #ffffff; color: var(--accent); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      min-height: 100%;
+    }
+    .card img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      display: block;
+      background: #e5e7eb;
+    }
+    .card-body { padding: 10px; }
+    .card h3 { margin: 0 0 5px; font-size: 15px; line-height: 1.25; }
+    .meta { color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .tag {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 7px;
+      margin: 2px 2px 2px 0;
+      font-size: 12px;
+      background: #f8fafc;
+    }
+    .scorebar {
+      height: 8px;
+      border-radius: 999px;
+      background: #e4e7ec;
+      margin: 8px 0 4px;
+      overflow: hidden;
+    }
+    .scorebar span { display: block; height: 100%; background: var(--accent2); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 9px; text-align: left; vertical-align: top; }
+    .split { display: grid; grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.4fr); gap: 14px; }
+    .mini { font-size: 12px; color: var(--muted); }
+    svg { width: 100%; min-height: 460px; border: 1px solid var(--line); border-radius: 8px; background: white; }
+    .pillrow { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pillrow button { width: auto; padding: 7px 10px; background: #eef4ff; color: #1849a9; border-color: #b2ccff; }
+    @media (max-width: 760px) {
+      .split { grid-template-columns: 1fr; }
+      main { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>__TITLE__</h1>
+  <p>__SUBTITLE__</p>
+</header>
+<main>
+__BODY__
+</main>
+<script>
+const movies = __MOVIES__;
+const genreList = [...new Set(movies.flatMap(m => m.genres.split("|")))].sort();
+function terms(text) {
+  return String(text).toLowerCase().replace(/[^a-z0-9\\s-]/g, " ").split(/\\s+/).filter(w => w.length > 2);
+}
+function movieText(m) {
+  return `${m.title} ${m.genres.replaceAll("|", " ")} ${m.director} ${m.description} ${m.keywords}`;
+}
+const docs = movies.map(movieText);
+const vocab = [...new Set(docs.flatMap(terms))];
+const idf = Object.fromEntries(vocab.map(t => [t, Math.log((1 + docs.length) / (1 + docs.filter(d => terms(d).includes(t)).length)) + 1]));
+function vectorize(text) {
+  const counts = {};
+  terms(text).forEach(t => counts[t] = (counts[t] || 0) + 1);
+  return Object.fromEntries(vocab.map(t => [t, (counts[t] || 0) * idf[t]]));
+}
+const docVectors = docs.map(vectorize);
+function cosine(a, b) {
+  let dot = 0, na = 0, nb = 0;
+  vocab.forEach(t => { dot += (a[t] || 0) * (b[t] || 0); na += (a[t] || 0) ** 2; nb += (b[t] || 0) ** 2; });
+  return dot / (Math.sqrt(na) * Math.sqrt(nb) || 1);
+}
+function genreSet(movie) { return new Set(movie.genres.split("|")); }
+function overlap(a, b) { return [...a].filter(x => b.has(x)); }
+function movieCard(item, score=0, note="") {
+  const genres = item.genres.split("|").map(g => `<span class="tag">${g}</span>`).join("");
+  return `<article class="card">
+    <img src="${item.poster_url}" alt="${item.title} poster">
+    <div class="card-body">
+      <h3>${item.title}</h3>
+      <div class="meta">${item.year} | ${item.director}</div>
+      <div>${genres}</div>
+      ${score ? `<div class="scorebar"><span style="width:${Math.max(3, Math.min(100, score * 100))}%"></span></div><div class="mini">score ${score.toFixed(3)}</div>` : ""}
+      ${note ? `<p class="mini">${note}</p>` : ""}
+    </div>
+  </article>`;
+}
+function rankByQuery(query) {
+  const qv = vectorize(query);
+  return movies.map((m, i) => {
+    const shared = vocab.filter(t => (qv[t] || 0) > 0 && (docVectors[i][t] || 0) > 0).slice(0, 8);
+    return { ...m, score: cosine(qv, docVectors[i]), shared };
+  }).sort((a, b) => b.score - a.score);
+}
+function semanticRank(query) {
+  const synonymMap = {
+    space: ["space", "astronaut", "mars", "orbit", "wormhole", "exploration"],
+    family: ["family", "children", "animation", "kindness", "toys"],
+    romance: ["romance", "love", "lifelong", "couple", "music"],
+    mind: ["dreams", "simulation", "reality", "mind-bending", "hacker"],
+    crime: ["crime", "justice", "chaos", "superhero", "action"],
+    comedy: ["comedy", "humor", "light", "family"]
+  };
+  const expanded = terms(query).flatMap(t => synonymMap[t] || [t]).join(" ");
+  return rankByQuery(query + " " + expanded);
+}
+__SCRIPT__
+</script>
+</body>
+</html>
+"""
+    subtitle = body.split("\n", 1)[0].strip()
+    clean_body = body.split("\n", 1)[1] if "\n" in body else body
+    return (
+        page.replace("__TITLE__", title)
+        .replace("__SUBTITLE__", subtitle)
+        .replace("__BODY__", clean_body)
+        .replace("__MOVIES__", json.dumps(movie_data))
+        .replace("__SCRIPT__", script)
+    )
+
+
+def write_real_world_html() -> None:
+    (DEMOS / "index.html").write_text(
+        real_world_html_page(
+            "Chapter 2 Real-World Demo Hub",
+            """Choose a demo below. These mini-apps connect the Chapter 2 slide exercises to visual, classroom-ready recommendation scenarios.
+<section class="panel">
+  <div class="grid" id="demoGrid"></div>
+</section>""",
+            """
+const demos = [
+  ["TF-IDF Search", "real_world_tfidf_search_demo.html", "Search a catalog and inspect shared weighted terms."],
+  ["Semantic vs Keyword", "semantic_vs_keyword_demo.html", "Compare lexical and semantic-style recommendations."],
+  ["Content Graph", "graph_content_explorer_demo.html", "Explore item nodes, edges, and graph-neighborhood ranking."],
+  ["Multi-Modal Posters", "multimodal_poster_recommender_demo.html", "Fuse text and poster style with real movie artwork."],
+  ["Context Re-Ranking", "context_aware_reranking_demo.html", "See how family, mobile, and TV contexts change ranking."],
+  ["Zero-Shot Discovery", "zero_shot_discovery_demo.html", "Type natural-language intents and get recommendations."]
+];
+document.querySelector("#demoGrid").innerHTML = demos.map(([name, url, desc]) =>
+  `<article class="card"><div class="card-body"><h3>${name}</h3><p class="meta">${desc}</p><p><a href="${url}">Open demo</a></p></div></article>`
+).join("");
+""",
+        ),
+        encoding="utf-8",
+    )
+
+    (DEMOS / "real_world_tfidf_search_demo.html").write_text(
+        real_world_html_page(
+            "Real-World TF-IDF Search Demo",
+            """Search the catalog like a small streaming-service content search. The ranking shows scores and shared terms.
+<section class="toolbar">
+  <div><label>Search query</label><input id="query" value="space survival astronaut"></div>
+  <div><label>Genre filter</label><select id="genre"><option value="">All genres</option></select></div>
+  <div><button id="run">Run TF-IDF Search</button></div>
+</section>
+<section class="panel"><div id="results" class="grid"></div></section>
+<section class="panel"><div id="table"></div></section>""",
+            """
+const genreSelect = document.querySelector("#genre");
+genreList.forEach(g => genreSelect.add(new Option(g, g)));
+function render() {
+  const query = document.querySelector("#query").value;
+  const genre = genreSelect.value;
+  const ranked = rankByQuery(query).filter(m => !genre || m.genres.includes(genre)).slice(0, 6);
+  document.querySelector("#results").innerHTML = ranked.map(m => movieCard(m, m.score, `Shared terms: ${m.shared.join(", ") || "weak lexical match"}`)).join("");
+  document.querySelector("#table").innerHTML = `<table><thead><tr><th>Rank</th><th>Movie</th><th>Similarity</th><th>Shared TF-IDF terms</th></tr></thead><tbody>` +
+    ranked.map((m, i) => `<tr><td>${i + 1}</td><td>${m.title}</td><td>${m.score.toFixed(3)}</td><td>${m.shared.join(", ") || "none"}</td></tr>`).join("") +
+    `</tbody></table>`;
+}
+document.querySelector("#run").addEventListener("click", render);
+render();
+""",
+        ),
+        encoding="utf-8",
+    )
+
+    (DEMOS / "semantic_vs_keyword_demo.html").write_text(
+        real_world_html_page(
+            "Semantic vs Keyword Demo",
+            """Compare exact-word TF-IDF ranking with a lightweight semantic expansion that simulates why embeddings can retrieve related meanings.
+<section class="toolbar">
+  <div><label>Intent</label><input id="query" value="mind bending reality"></div>
+  <div><button id="run">Compare Methods</button></div>
+</section>
+<section class="split">
+  <div class="panel"><h2>Keyword TF-IDF</h2><div id="keyword" class="grid"></div></div>
+  <div class="panel"><h2>Semantic-style Expansion</h2><div id="semantic" class="grid"></div></div>
+</section>""",
+            """
+function render() {
+  const query = document.querySelector("#query").value;
+  const keyword = rankByQuery(query).slice(0, 4);
+  const semantic = semanticRank(query).slice(0, 4);
+  document.querySelector("#keyword").innerHTML = keyword.map(m => movieCard(m, m.score, `Matched words: ${m.shared.join(", ") || "few exact terms"}`)).join("");
+  document.querySelector("#semantic").innerHTML = semantic.map(m => movieCard(m, m.score, `Semantic-style match from expanded intent`)).join("");
+}
+document.querySelector("#run").addEventListener("click", render);
+render();
+""",
+        ),
+        encoding="utf-8",
+    )
+
+    (DEMOS / "graph_content_explorer_demo.html").write_text(
+        real_world_html_page(
+            "Graph-Based Content Explorer",
+            """Click a seed movie and inspect graph edges based on shared genres and director. The table ranks graph-neighborhood recommendations.
+<section class="toolbar">
+  <div><label>Seed movie</label><select id="seed"></select></div>
+  <div><button id="run">Explore Graph</button></div>
+</section>
+<section class="split">
+  <div class="panel"><svg id="graph" viewBox="0 0 760 500"></svg></div>
+  <div class="panel"><div id="ranking"></div></div>
+</section>""",
+            """
+const seedSelect = document.querySelector("#seed");
+movies.forEach(m => seedSelect.add(new Option(m.title, m.title)));
+seedSelect.value = "Interstellar";
+function edgeReason(a, b) {
+  const shared = overlap(genreSet(a), genreSet(b));
+  const sameDirector = a.director === b.director;
+  const weight = shared.length + (sameDirector ? 1.5 : 0);
+  return { weight, reason: [...shared, sameDirector ? "same director" : ""].filter(Boolean).join(", ") };
+}
+const positions = movies.map((m, i) => {
+  const angle = (Math.PI * 2 * i) / movies.length - Math.PI / 2;
+  return { title: m.title, x: 380 + 285 * Math.cos(angle), y: 250 + 185 * Math.sin(angle) };
+});
+function pos(title) { return positions.find(p => p.title === title); }
+function render() {
+  const seedTitle = seedSelect.value;
+  const seed = movies.find(m => m.title === seedTitle);
+  let edges = "";
+  movies.forEach(a => movies.forEach(b => {
+    if (a.title >= b.title) return;
+    const e = edgeReason(a, b);
+    if (e.weight > 0) {
+      const pa = pos(a.title), pb = pos(b.title);
+      const active = a.title === seedTitle || b.title === seedTitle;
+      edges += `<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="${active ? "#155eef" : "#d0d5dd"}" stroke-width="${active ? 3 : 1}" opacity="${active ? 0.9 : 0.45}"/>`;
+    }
+  }));
+  const nodes = movies.map(m => {
+    const p = pos(m.title);
+    const isSeed = m.title === seedTitle;
+    return `<g><circle cx="${p.x}" cy="${p.y}" r="${isSeed ? 23 : 17}" fill="${isSeed ? "#155eef" : "#eef4ff"}" stroke="#1849a9" stroke-width="2"></circle>
+      <text x="${p.x}" y="${p.y + 38}" text-anchor="middle" font-size="11">${m.title}</text></g>`;
+  }).join("");
+  document.querySelector("#graph").innerHTML = edges + nodes;
+  const rows = movies.filter(m => m.title !== seedTitle).map(m => {
+    const direct = edgeReason(seed, m);
+    const common = movies.filter(x => x.title !== seedTitle && x.title !== m.title && edgeReason(seed, x).weight > 0 && edgeReason(m, x).weight > 0).length;
+    return { ...m, graphScore: direct.weight + 0.5 * common, reason: direct.reason || "shared graph neighborhood" };
+  }).sort((a, b) => b.graphScore - a.graphScore).slice(0, 6);
+  document.querySelector("#ranking").innerHTML = `<table><thead><tr><th>Rank</th><th>Movie</th><th>Graph score</th><th>Reason</th></tr></thead><tbody>` +
+    rows.map((m, i) => `<tr><td>${i + 1}</td><td>${m.title}</td><td>${m.graphScore.toFixed(2)}</td><td>${m.reason}</td></tr>`).join("") +
+    `</tbody></table>`;
+}
+document.querySelector("#run").addEventListener("click", render);
+render();
+""",
+        ),
+        encoding="utf-8",
+    )
+
+    (DEMOS / "multimodal_poster_recommender_demo.html").write_text(
+        real_world_html_page(
+            "Multi-Modal Poster Recommender",
+            """Blend text similarity with poster-style similarity. Students can see how visual evidence changes the recommendation list.
+<section class="toolbar">
+  <div><label>Seed movie</label><select id="seed"></select></div>
+  <div><label>Text weight</label><input id="textWeight" type="range" min="0" max="1" step="0.05" value="0.65"></div>
+  <div><label>Poster weight</label><input id="imageWeight" type="range" min="0" max="1" step="0.05" value="0.35"></div>
+  <div><button id="run">Recommend</button></div>
+</section>
+<section class="panel"><div id="weights" class="mini"></div><div id="results" class="grid"></div></section>""",
+            """
+const seedSelect = document.querySelector("#seed");
+movies.forEach(m => seedSelect.add(new Option(m.title, m.title)));
+seedSelect.value = "Toy Story";
+const posterStyle = {
+  "Inception": [0.18, 0.24, 0.34, 0.45], "Interstellar": [0.12, 0.18, 0.30, 0.52],
+  "Titanic": [0.70, 0.60, 0.48, 0.82], "The Matrix": [0.10, 0.35, 0.25, 0.40],
+  "Toy Story": [0.88, 0.70, 0.62, 0.92], "Finding Nemo": [0.80, 0.78, 0.72, 0.90],
+  "The Dark Knight": [0.10, 0.13, 0.18, 0.35], "The Martian": [0.62, 0.46, 0.35, 0.66],
+  "The Notebook": [0.72, 0.58, 0.56, 0.75], "Paddington": [0.90, 0.72, 0.54, 0.86],
+  "Gravity": [0.12, 0.18, 0.22, 0.42], "La La Land": [0.82, 0.58, 0.68, 0.84]
+};
+function vecCos(a, b) {
+  const dot = a.reduce((s, x, i) => s + x * b[i], 0);
+  const na = Math.sqrt(a.reduce((s, x) => s + x * x, 0));
+  const nb = Math.sqrt(b.reduce((s, x) => s + x * x, 0));
+  return dot / (na * nb || 1);
+}
+function render() {
+  const seed = movies.find(m => m.title === seedSelect.value);
+  const seedIdx = movies.findIndex(m => m.title === seed.title);
+  const textW = Number(document.querySelector("#textWeight").value);
+  const imgW = Number(document.querySelector("#imageWeight").value);
+  const rows = movies.filter(m => m.title !== seed.title).map(m => {
+    const idx = movies.findIndex(x => x.title === m.title);
+    const textScore = cosine(docVectors[seedIdx], docVectors[idx]);
+    const imageScore = vecCos(posterStyle[seed.title], posterStyle[m.title]);
+    return { ...m, score: textW * textScore + imgW * imageScore, textScore, imageScore };
+  }).sort((a, b) => b.score - a.score).slice(0, 5);
+  document.querySelector("#weights").textContent = `Text weight ${textW.toFixed(2)} | Poster weight ${imgW.toFixed(2)}`;
+  document.querySelector("#results").innerHTML = [movieCard(seed, 0, "Query movie")].concat(
+    rows.map(m => movieCard(m, m.score, `text ${m.textScore.toFixed(2)} | poster ${m.imageScore.toFixed(2)}`))
+  ).join("");
+}
+document.querySelector("#run").addEventListener("click", render);
+render();
+""",
+        ),
+        encoding="utf-8",
+    )
+
+    (DEMOS / "context_aware_reranking_demo.html").write_text(
+        real_world_html_page(
+            "Context-Aware Re-Ranking Demo",
+            """Start from a query, then apply morning mobile, evening TV, or family mode. The ranking changes for practical reasons.
+<section class="toolbar">
+  <div><label>Query</label><input id="query" value="family adventure comedy"></div>
+  <div><label>Context</label><select id="context"><option value="none">No context</option><option value="morning_mobile">Morning mobile</option><option value="evening_tv">Evening TV</option><option value="family_mode">Family mode</option></select></div>
+  <div><button id="run">Re-rank</button></div>
+</section>
+<section class="panel"><div id="results" class="grid"></div></section>""",
+            """
+function contextBonus(m, context) {
+  if (context === "morning_mobile" && Number(m.duration_min) <= 110) return [0.12, "short enough for mobile"];
+  if (context === "evening_tv" && Number(m.duration_min) >= 120) return [0.10, "longer evening viewing"];
+  if (context === "family_mode" && Number(m.family_friendly) === 1) return [0.22, "family-friendly"];
+  return [0, "base content score"];
+}
+function render() {
+  const query = document.querySelector("#query").value;
+  const context = document.querySelector("#context").value;
+  const ranked = rankByQuery(query).map(m => {
+    const [bonus, reason] = contextBonus(m, context);
+    return { ...m, finalScore: m.score + bonus, reason, bonus };
+  }).sort((a, b) => b.finalScore - a.finalScore).slice(0, 6);
+  document.querySelector("#results").innerHTML = ranked.map(m => movieCard(m, m.finalScore, `${m.reason}; context bonus ${m.bonus.toFixed(2)}`)).join("");
+}
+document.querySelector("#run").addEventListener("click", render);
+render();
+""",
+        ),
+        encoding="utf-8",
+    )
+
+    (DEMOS / "zero_shot_discovery_demo.html").write_text(
+        real_world_html_page(
+            "Zero-Shot Discovery Demo",
+            """Type what you want in natural language. The app uses query expansion to simulate zero-shot semantic discovery without an API key.
+<section class="toolbar">
+  <div><label>Natural-language request</label><input id="query" value="movies about space exploration and survival"></div>
+  <div><button id="run">Discover Movies</button></div>
+</section>
+<section class="panel"><div class="pillrow" id="examples"></div></section>
+<section class="panel"><div id="results" class="grid"></div></section>""",
+            """
+const examples = [
+  "movies about space exploration and survival",
+  "light comedy for family evening",
+  "romantic drama with music",
+  "mind bending reality simulation",
+  "dark action crime justice"
+];
+document.querySelector("#examples").innerHTML = examples.map(q => `<button type="button" data-q="${q}">${q}</button>`).join("");
+document.querySelector("#examples").addEventListener("click", event => {
+  if (event.target.dataset.q) {
+    document.querySelector("#query").value = event.target.dataset.q;
+    render();
+  }
+});
+function render() {
+  const query = document.querySelector("#query").value;
+  const ranked = semanticRank(query).slice(0, 6);
+  document.querySelector("#results").innerHTML = ranked.map(m => movieCard(m, m.score, `Zero-shot intent match: ${m.genres.replaceAll("|", ", ")}`)).join("");
+}
+document.querySelector("#run").addEventListener("click", render);
+render();
+""",
+        ),
+        encoding="utf-8",
+    )
 
 
 def write_html() -> None:
@@ -2201,6 +2716,7 @@ def main() -> None:
     write_readme()
     write_report()
     write_html()
+    write_real_world_html()
     update_root_readme()
 
 

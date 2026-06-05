@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Semantic vs Keyword Demo</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --ink: #172033;
+      --muted: #667085;
+      --panel: #ffffff;
+      --line: #d6dbe4;
+      --accent: #155eef;
+      --accent2: #087443;
+      --warn: #b54708;
+      --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    header {
+      background: #101828;
+      color: white;
+      padding: 20px 22px;
+      border-bottom: 4px solid var(--accent);
+    }
+    header h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 38px);
+      letter-spacing: 0;
+    }
+    header p {
+      color: #d0d5dd;
+      max-width: 920px;
+      margin: 8px 0 0;
+      line-height: 1.5;
+    }
+    main { max-width: 1220px; margin: 0 auto; padding: 18px; }
+    .toolbar, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin: 14px 0;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 5px; }
+    input, select, button {
+      width: 100%;
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      background: white;
+      color: var(--ink);
+    }
+    button {
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+    button.secondary { background: #ffffff; color: var(--accent); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      min-height: 100%;
+    }
+    .card img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      display: block;
+      background: #e5e7eb;
+    }
+    .card-body { padding: 10px; }
+    .card h3 { margin: 0 0 5px; font-size: 15px; line-height: 1.25; }
+    .meta { color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .tag {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 7px;
+      margin: 2px 2px 2px 0;
+      font-size: 12px;
+      background: #f8fafc;
+    }
+    .scorebar {
+      height: 8px;
+      border-radius: 999px;
+      background: #e4e7ec;
+      margin: 8px 0 4px;
+      overflow: hidden;
+    }
+    .scorebar span { display: block; height: 100%; background: var(--accent2); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 9px; text-align: left; vertical-align: top; }
+    .split { display: grid; grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.4fr); gap: 14px; }
+    .mini { font-size: 12px; color: var(--muted); }
+    svg { width: 100%; min-height: 460px; border: 1px solid var(--line); border-radius: 8px; background: white; }
+    .pillrow { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pillrow button { width: auto; padding: 7px 10px; background: #eef4ff; color: #1849a9; border-color: #b2ccff; }
+    @media (max-width: 760px) {
+      .split { grid-template-columns: 1fr; }
+      main { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Semantic vs Keyword Demo</h1>
+  <p>Compare exact-word TF-IDF ranking with a lightweight semantic expansion that simulates why embeddings can retrieve related meanings.</p>
+</header>
+<main>
+<section class="toolbar">
+  <div><label>Intent</label><input id="query" value="mind bending reality"></div>
+  <div><button id="run">Compare Methods</button></div>
+</section>
+<section class="split">
+  <div class="panel"><h2>Keyword TF-IDF</h2><div id="keyword" class="grid"></div></div>
+  <div class="panel"><h2>Semantic-style Expansion</h2><div id="semantic" class="grid"></div></div>
+</section>
+</main>
+<script>
+const movies = [{"movie_id": 1, "title": "Inception", "genres": "Sci-Fi|Thriller|Action", "director": "Christopher Nolan", "year": 2010, "duration_min": 148, "rating": 8.8, "family_friendly": 0, "description": "A thief enters layered dreams to plant an idea while questioning what is real.", "keywords": "dreams heist subconscious mind-bending", "poster_url": "https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg"}, {"movie_id": 2, "title": "Interstellar", "genres": "Sci-Fi|Adventure|Drama", "director": "Christopher Nolan", "year": 2014, "duration_min": 169, "rating": 8.7, "family_friendly": 0, "description": "Astronauts travel through a wormhole to find a new home for humanity.", "keywords": "space exploration wormhole survival family", "poster_url": "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg"}, {"movie_id": 3, "title": "Titanic", "genres": "Romance|Drama", "director": "James Cameron", "year": 1997, "duration_min": 195, "rating": 7.9, "family_friendly": 0, "description": "A young couple from different social classes fall in love on a doomed ocean liner.", "keywords": "romance ship tragedy historical", "poster_url": "https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg"}, {"movie_id": 4, "title": "The Matrix", "genres": "Sci-Fi|Action", "director": "The Wachowskis", "year": 1999, "duration_min": 136, "rating": 8.7, "family_friendly": 0, "description": "A hacker discovers that reality is a simulated world controlled by machines.", "keywords": "simulation hacker reality action cyberpunk", "poster_url": "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg"}, {"movie_id": 5, "title": "Toy Story", "genres": "Animation|Adventure|Comedy|Family", "director": "John Lasseter", "year": 1995, "duration_min": 81, "rating": 8.3, "family_friendly": 1, "description": "A cowboy doll feels threatened when a space ranger toy becomes the new favorite.", "keywords": "toys friendship family adventure", "poster_url": "https://image.tmdb.org/t/p/w500/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg"}, {"movie_id": 6, "title": "Finding Nemo", "genres": "Animation|Adventure|Family", "director": "Andrew Stanton", "year": 2003, "duration_min": 100, "rating": 8.2, "family_friendly": 1, "description": "A cautious clownfish crosses the ocean to rescue his lost son.", "keywords": "ocean rescue family journey fish", "poster_url": "https://image.tmdb.org/t/p/w500/eHuGQ10FUzK1mdOY69wF5pGgEf5.jpg"}, {"movie_id": 7, "title": "The Dark Knight", "genres": "Action|Crime|Drama", "director": "Christopher Nolan", "year": 2008, "duration_min": 152, "rating": 9.0, "family_friendly": 0, "description": "Batman faces a chaotic criminal who challenges his moral code.", "keywords": "superhero crime chaos justice", "poster_url": "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg"}, {"movie_id": 8, "title": "The Martian", "genres": "Sci-Fi|Adventure|Comedy", "director": "Ridley Scott", "year": 2015, "duration_min": 144, "rating": 8.0, "family_friendly": 0, "description": "An astronaut stranded on Mars uses science and humor to survive until rescue.", "keywords": "mars survival science astronaut space", "poster_url": "https://image.tmdb.org/t/p/w500/5BHuvQ6p9kfc091Z8RiFNhCwL4b.jpg"}, {"movie_id": 9, "title": "The Notebook", "genres": "Romance|Drama", "director": "Nick Cassavetes", "year": 2004, "duration_min": 123, "rating": 7.8, "family_friendly": 0, "description": "An elderly man reads a story about a lifelong romance across social barriers.", "keywords": "romance memory love drama", "poster_url": "https://image.tmdb.org/t/p/w500/qom1SZSENdmHFNZBXbtJAU0WTlC.jpg"}, {"movie_id": 10, "title": "Paddington", "genres": "Comedy|Family|Adventure", "director": "Paul King", "year": 2014, "duration_min": 95, "rating": 7.3, "family_friendly": 1, "description": "A polite young bear finds a home with a London family and spreads kindness.", "keywords": "family comedy london kindness adventure", "poster_url": "https://image.tmdb.org/t/p/w500/wpchRGhRhvhtU083PfX2yixXtiw.jpg"}, {"movie_id": 11, "title": "Gravity", "genres": "Sci-Fi|Thriller|Drama", "director": "Alfonso Cuaron", "year": 2013, "duration_min": 91, "rating": 7.7, "family_friendly": 0, "description": "Two astronauts struggle to survive after debris destroys their shuttle.", "keywords": "space survival astronaut disaster orbit", "poster_url": "https://image.tmdb.org/t/p/w500/kZ2nZw8D681aphje8NJi8EfbL1U.jpg"}, {"movie_id": 12, "title": "La La Land", "genres": "Romance|Drama|Music", "director": "Damien Chazelle", "year": 2016, "duration_min": 128, "rating": 8.0, "family_friendly": 0, "description": "A jazz musician and an aspiring actor fall in love while pursuing artistic dreams.", "keywords": "music romance ambition hollywood", "poster_url": "https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg"}];
+const genreList = [...new Set(movies.flatMap(m => m.genres.split("|")))].sort();
+function terms(text) {
+  return String(text).toLowerCase().replace(/[^a-z0-9\s-]/g, " ").split(/\s+/).filter(w => w.length > 2);
+}
+function movieText(m) {
+  return `${m.title} ${m.genres.replaceAll("|", " ")} ${m.director} ${m.description} ${m.keywords}`;
+}
+const docs = movies.map(movieText);
+const vocab = [...new Set(docs.flatMap(terms))];
+const idf = Object.fromEntries(vocab.map(t => [t, Math.log((1 + docs.length) / (1 + docs.filter(d => terms(d).includes(t)).length)) + 1]));
+function vectorize(text) {
+  const counts = {};
+  terms(text).forEach(t => counts[t] = (counts[t] || 0) + 1);
+  return Object.fromEntries(vocab.map(t => [t, (counts[t] || 0) * idf[t]]));
+}
+const docVectors = docs.map(vectorize);
+function cosine(a, b) {
+  let dot = 0, na = 0, nb = 0;
+  vocab.forEach(t => { dot += (a[t] || 0) * (b[t] || 0); na += (a[t] || 0) ** 2; nb += (b[t] || 0) ** 2; });
+  return dot / (Math.sqrt(na) * Math.sqrt(nb) || 1);
+}
+function genreSet(movie) { return new Set(movie.genres.split("|")); }
+function overlap(a, b) { return [...a].filter(x => b.has(x)); }
+function movieCard(item, score=0, note="") {
+  const genres = item.genres.split("|").map(g => `<span class="tag">${g}</span>`).join("");
+  return `<article class="card">
+    <img src="${item.poster_url}" alt="${item.title} poster">
+    <div class="card-body">
+      <h3>${item.title}</h3>
+      <div class="meta">${item.year} | ${item.director}</div>
+      <div>${genres}</div>
+      ${score ? `<div class="scorebar"><span style="width:${Math.max(3, Math.min(100, score * 100))}%"></span></div><div class="mini">score ${score.toFixed(3)}</div>` : ""}
+      ${note ? `<p class="mini">${note}</p>` : ""}
+    </div>
+  </article>`;
+}
+function rankByQuery(query) {
+  const qv = vectorize(query);
+  return movies.map((m, i) => {
+    const shared = vocab.filter(t => (qv[t] || 0) > 0 && (docVectors[i][t] || 0) > 0).slice(0, 8);
+    return { ...m, score: cosine(qv, docVectors[i]), shared };
+  }).sort((a, b) => b.score - a.score);
+}
+function semanticRank(query) {
+  const synonymMap = {
+    space: ["space", "astronaut", "mars", "orbit", "wormhole", "exploration"],
+    family: ["family", "children", "animation", "kindness", "toys"],
+    romance: ["romance", "love", "lifelong", "couple", "music"],
+    mind: ["dreams", "simulation", "reality", "mind-bending", "hacker"],
+    crime: ["crime", "justice", "chaos", "superhero", "action"],
+    comedy: ["comedy", "humor", "light", "family"]
+  };
+  const expanded = terms(query).flatMap(t => synonymMap[t] || [t]).join(" ");
+  return rankByQuery(query + " " + expanded);
+}
+
+function render() {
+  const query = document.querySelector("#query").value;
+  const keyword = rankByQuery(query).slice(0, 4);
+  const semantic = semanticRank(query).slice(0, 4);
+  document.querySelector("#keyword").innerHTML = keyword.map(m => movieCard(m, m.score, `Matched words: ${m.shared.join(", ") || "few exact terms"}`)).join("");
+  document.querySelector("#semantic").innerHTML = semantic.map(m => movieCard(m, m.score, `Semantic-style match from expanded intent`)).join("");
+}
+document.querySelector("#run").addEventListener("click", render);
+render();
+
+</script>
+</body>
+</html>

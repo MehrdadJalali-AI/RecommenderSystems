@@ -40,12 +40,19 @@ The examples deliberately use a small dataset so students can inspect intermedia
 
 The `html_demos/` folder contains simple lecture demos:
 
+- `index.html`
+- `real_world_tfidf_search_demo.html`
+- `semantic_vs_keyword_demo.html`
+- `graph_content_explorer_demo.html`
+- `multimodal_poster_recommender_demo.html`
+- `context_aware_reranking_demo.html`
+- `zero_shot_discovery_demo.html`
 - `content_based_filtering_demo.html`
 - `tfidf_similarity_demo.html`
 - `user_profile_ranking_demo.html`
 - `poi_content_based_demo.html`
 
-These are standalone HTML files and can be opened directly in a browser.
+These are standalone HTML files and can be opened directly in a browser. Start with `html_demos/index.html` for the richer real-world demos.
 
 ## Optional Dependencies
 
