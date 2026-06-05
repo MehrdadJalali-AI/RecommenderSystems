@@ -32,3 +32,22 @@ All notebooks are **Google Colab–ready** and require the following Python libr
 
 ```bash
 !pip install sentence-transformers torch torchvision transformers networkx scikit-learn pillow tqdm
+```
+
+---
+
+## Recommended Chapter 2 Practical Path
+
+The reorganized Chapter 2 practical material now lives in [`chapter_02_content_based/`](./chapter_02_content_based/).
+
+Start there for the student-facing sequence:
+
+1. Feature vectors and similarity
+2. TF-IDF movie recommendation
+3. User profiles and ranking
+4. Top-K evaluation metrics
+5. SBERT semantic recommendation with fallback logic
+6. Graph-based content recommendation
+7. Context-aware, explainable, and zero-shot demos
+
+The older root-level Chapter 2 notebooks are kept for reference until the new structure is reviewed.

@@ -1,0 +1,10 @@
+user_id,title,rating,clicked,liked,watch_minutes,days_ago
+U1,Inception,5,1,1,140,3
+U1,Interstellar,5,1,1,165,12
+U1,The Matrix,4,1,1,120,30
+U2,Toy Story,5,1,1,80,2
+U2,Finding Nemo,4,1,1,88,8
+U2,Paddington,5,1,1,90,20
+U3,Titanic,5,1,1,180,5
+U3,The Notebook,4,1,1,115,11
+U3,La La Land,4,1,1,110,28

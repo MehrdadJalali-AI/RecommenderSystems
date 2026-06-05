@@ -1,0 +1,13 @@
+movie_id,title,genres,director,year,duration_min,rating,family_friendly,description,keywords
+1,Inception,Sci-Fi|Thriller|Action,Christopher Nolan,2010,148,8.8,0,A thief enters layered dreams to plant an idea while questioning what is real.,dreams heist subconscious mind-bending
+2,Interstellar,Sci-Fi|Adventure|Drama,Christopher Nolan,2014,169,8.7,0,Astronauts travel through a wormhole to find a new home for humanity.,space exploration wormhole survival family
+3,Titanic,Romance|Drama,James Cameron,1997,195,7.9,0,A young couple from different social classes fall in love on a doomed ocean liner.,romance ship tragedy historical
+4,The Matrix,Sci-Fi|Action,The Wachowskis,1999,136,8.7,0,A hacker discovers that reality is a simulated world controlled by machines.,simulation hacker reality action cyberpunk
+5,Toy Story,Animation|Adventure|Comedy|Family,John Lasseter,1995,81,8.3,1,A cowboy doll feels threatened when a space ranger toy becomes the new favorite.,toys friendship family adventure
+6,Finding Nemo,Animation|Adventure|Family,Andrew Stanton,2003,100,8.2,1,A cautious clownfish crosses the ocean to rescue his lost son.,ocean rescue family journey fish
+7,The Dark Knight,Action|Crime|Drama,Christopher Nolan,2008,152,9.0,0,Batman faces a chaotic criminal who challenges his moral code.,superhero crime chaos justice
+8,The Martian,Sci-Fi|Adventure|Comedy,Ridley Scott,2015,144,8.0,0,An astronaut stranded on Mars uses science and humor to survive until rescue.,mars survival science astronaut space
+9,The Notebook,Romance|Drama,Nick Cassavetes,2004,123,7.8,0,An elderly man reads a story about a lifelong romance across social barriers.,romance memory love drama
+10,Paddington,Comedy|Family|Adventure,Paul King,2014,95,7.3,1,A polite young bear finds a home with a London family and spreads kindness.,family comedy london kindness adventure
+11,Gravity,Sci-Fi|Thriller|Drama,Alfonso Cuaron,2013,91,7.7,0,Two astronauts struggle to survive after debris destroys their shuttle.,space survival astronaut disaster orbit
+12,La La Land,Romance|Drama|Music,Damien Chazelle,2016,128,8.0,0,A jazz musician and an aspiring actor fall in love while pursuing artistic dreams.,music romance ambition hollywood
