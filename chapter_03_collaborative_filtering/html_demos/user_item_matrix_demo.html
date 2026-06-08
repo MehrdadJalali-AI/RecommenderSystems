@@ -1,0 +1,46 @@
+<!doctype html><html><head><meta charset="utf-8"><title>User-Item Matrix</title>
+<style>
+  :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  body { margin: 0; background: #f7f7f3; color: #222; }
+  main { max-width: 1120px; margin: 0 auto; padding: 32px 20px 48px; }
+  h1 { margin: 0 0 10px; font-size: clamp(2rem, 4vw, 3.4rem); letter-spacing: 0; }
+  h2 { margin-top: 32px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+  .card { background: white; border: 1px solid #deded4; border-radius: 8px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  a { color: #0b6f6a; font-weight: 700; text-decoration: none; }
+  table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+  th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+  th { background: #1f2933; color: white; }
+  .missing { background: #f0eee7; color: #9a9387; }
+  .high { background: #b7e4c7; }
+  .mid { background: #fff3b0; }
+  .low { background: #f4b4a6; }
+  button, select { font: inherit; border: 1px solid #b7b7aa; background: white; border-radius: 6px; padding: 8px 10px; }
+  .bar { height: 16px; background: #2a9d8f; border-radius: 4px; }
+  .node { display: inline-flex; align-items: center; justify-content: center; min-width: 92px; min-height: 42px; margin: 6px; border-radius: 999px; border: 2px solid #64748b; background: white; }
+  .user { border-color: #0f766e; }
+  .item { border-color: #b45309; }
+  .edge { color: #555; font-size: .9rem; }
+</style>
+</head><body><main>
+<h1>User-Item Rating Matrix</h1>
+<p>Blank cells are unknown preferences, not zero ratings.</p>
+<div id="matrix"></div>
+<script>
+const movies = ["Star Wars", "Jurassic Park", "Terminator 2", "Independence Day", "The Matrix", "Toy Story", "Titanic", "The Notebook", "Blade Runner", "Finding Nemo"];
+const ratings = [{"user_id": "Sally", "movie_id": 1, "rating": 7, "days_ago": 420}, {"user_id": "Sally", "movie_id": 2, "rating": 6, "days_ago": 250}, {"user_id": "Sally", "movie_id": 3, "rating": 3, "days_ago": 120}, {"user_id": "Sally", "movie_id": 4, "rating": 7, "days_ago": 20}, {"user_id": "Sally", "movie_id": 5, "rating": 6, "days_ago": 14}, {"user_id": "Bob", "movie_id": 1, "rating": 7, "days_ago": 360}, {"user_id": "Bob", "movie_id": 2, "rating": 4, "days_ago": 270}, {"user_id": "Bob", "movie_id": 3, "rating": 4, "days_ago": 160}, {"user_id": "Bob", "movie_id": 4, "rating": 6, "days_ago": 30}, {"user_id": "Bob", "movie_id": 5, "rating": 7, "days_ago": 6}, {"user_id": "Chris", "movie_id": 1, "rating": 3, "days_ago": 330}, {"user_id": "Chris", "movie_id": 2, "rating": 7, "days_ago": 210}, {"user_id": "Chris", "movie_id": 3, "rating": 7, "days_ago": 90}, {"user_id": "Chris", "movie_id": 4, "rating": 2, "days_ago": 35}, {"user_id": "Chris", "movie_id": 6, "rating": 5, "days_ago": 22}, {"user_id": "Lynn", "movie_id": 1, "rating": 4, "days_ago": 300}, {"user_id": "Lynn", "movie_id": 2, "rating": 4, "days_ago": 180}, {"user_id": "Lynn", "movie_id": 3, "rating": 6, "days_ago": 70}, {"user_id": "Lynn", "movie_id": 4, "rating": 2, "days_ago": 12}, {"user_id": "Lynn", "movie_id": 6, "rating": 6, "days_ago": 10}, {"user_id": "Karen", "movie_id": 1, "rating": 7, "days_ago": 280}, {"user_id": "Karen", "movie_id": 2, "rating": 4, "days_ago": 150}, {"user_id": "Karen", "movie_id": 3, "rating": 3, "days_ago": 65}, {"user_id": "Karen", "movie_id": 5, "rating": 6, "days_ago": 8}, {"user_id": "Alice", "movie_id": 5, "rating": 5, "days_ago": 40}, {"user_id": "Alice", "movie_id": 9, "rating": 5, "days_ago": 12}, {"user_id": "Alice", "movie_id": 1, "rating": 4, "days_ago": 180}, {"user_id": "Alice", "movie_id": 4, "rating": 4, "days_ago": 21}, {"user_id": "Nina", "movie_id": 6, "rating": 5, "days_ago": 30}, {"user_id": "Nina", "movie_id": 10, "rating": 5, "days_ago": 7}, {"user_id": "Nina", "movie_id": 2, "rating": 4, "days_ago": 110}, {"user_id": "Nina", "movie_id": 7, "rating": 2, "days_ago": 260}, {"user_id": "Omar", "movie_id": 7, "rating": 5, "days_ago": 15}, {"user_id": "Omar", "movie_id": 8, "rating": 5, "days_ago": 6}, {"user_id": "Omar", "movie_id": 2, "rating": 3, "days_ago": 140}, {"user_id": "Omar", "movie_id": 10, "rating": 2, "days_ago": 90}];
+const users = [...new Set(ratings.map(r => r.user_id))];
+const byKey = Object.fromEntries(ratings.map(r => [r.user_id + "|" + movies[r.movie_id - 1], r.rating]));
+let html = "<table><thead><tr><th>User</th>" + movies.map(m => `<th>${m}</th>`).join("") + "</tr></thead><tbody>";
+for (const u of users) {
+  html += `<tr><th>${u}</th>`;
+  for (const m of movies) {
+    const value = byKey[u + "|" + m];
+    const cls = value == null ? "missing" : value >= 6 ? "high" : value >= 4 ? "mid" : "low";
+    html += `<td class="${cls}">${value ?? "?"}</td>`;
+  }
+  html += "</tr>";
+}
+html += "</tbody></table>";
+document.getElementById("matrix").innerHTML = html;
+</script></main></body></html>
