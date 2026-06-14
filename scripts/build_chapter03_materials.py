@@ -816,15 +816,11 @@ The examples use a compact movie-rating matrix based on the Chapter 3 lecture ex
 
 ## HTML Demos
 
-The `html_demos/` folder contains standalone lecture demos:
+The `html_demos/` folder contains one standalone real-world classroom demo:
 
 - `index.html`
-- `user_item_matrix_demo.html`
-- `similarity_neighbor_demo.html`
-- `item_item_prediction_demo.html`
-- `graph_ppr_demo.html`
 
-These files can be opened directly in a browser. Start with `html_demos/index.html`.
+This single page uses real movie posters and combines the main Chapter 3 ideas in one cinema recommendation application: the user-item matrix, sparsity, user-user similarity, item-item similarity, kNN prediction, cold-start fallback, temporal weighting, graph-style explanation, and Top-K evaluation. It can be opened directly in a browser.
 
 ## Optional Dependencies
 
@@ -926,103 +922,18 @@ HTML_STYLE = """
 
 
 def write_html() -> None:
-    index = f"""<!doctype html><html><head><meta charset="utf-8"><title>Chapter 3 Demos</title>{HTML_STYLE}</head><body><main>
-<h1>Chapter 3 Collaborative Filtering Demos</h1>
-<p>Standalone classroom demos for memory-based collaborative filtering.</p>
-<section class="grid">
-  <div class="card"><h2>User-Item Matrix</h2><p>Inspect sparsity, known ratings, and missing preferences.</p><a href="user_item_matrix_demo.html">Open demo</a></div>
-  <div class="card"><h2>Similarity Neighbors</h2><p>Compare Karen with other users using Pearson-like neighbor scores.</p><a href="similarity_neighbor_demo.html">Open demo</a></div>
-  <div class="card"><h2>Item-Item Prediction</h2><p>Predict a missing rating from similar movies already rated by a user.</p><a href="item_item_prediction_demo.html">Open demo</a></div>
-  <div class="card"><h2>Graph PPR</h2><p>See how graph-based CF spreads relevance through shared users and items.</p><a href="graph_ppr_demo.html">Open demo</a></div>
-</section></main></body></html>"""
-    (DEMOS / "index.html").write_text(index, encoding="utf-8")
-
-    matrix = f"""<!doctype html><html><head><meta charset="utf-8"><title>User-Item Matrix</title>{HTML_STYLE}</head><body><main>
-<h1>User-Item Rating Matrix</h1>
-<p>Blank cells are unknown preferences, not zero ratings.</p>
-<div id="matrix"></div>
-<script>
-const movies = {json.dumps([m["title"] for m in MOVIES])};
-const ratings = {json.dumps(RATINGS)};
-const users = [...new Set(ratings.map(r => r.user_id))];
-const byKey = Object.fromEntries(ratings.map(r => [r.user_id + "|" + movies[r.movie_id - 1], r.rating]));
-let html = "<table><thead><tr><th>User</th>" + movies.map(m => `<th>${{m}}</th>`).join("") + "</tr></thead><tbody>";
-for (const u of users) {{
-  html += `<tr><th>${{u}}</th>`;
-  for (const m of movies) {{
-    const value = byKey[u + "|" + m];
-    const cls = value == null ? "missing" : value >= 6 ? "high" : value >= 4 ? "mid" : "low";
-    html += `<td class="${{cls}}">${{value ?? "?"}}</td>`;
-  }}
-  html += "</tr>";
-}}
-html += "</tbody></table>";
-document.getElementById("matrix").innerHTML = html;
-</script></main></body></html>"""
-    (DEMOS / "user_item_matrix_demo.html").write_text(matrix, encoding="utf-8")
-
-    similarity = f"""<!doctype html><html><head><meta charset="utf-8"><title>Similarity Neighbors</title>{HTML_STYLE}</head><body><main>
-<h1>User Similarity Neighbors</h1>
-<p>Select a target user and inspect which neighbors have the most similar rating pattern.</p>
-<select id="target"></select><div id="out" class="grid"></div>
-<script>
-const ratings = {json.dumps(RATINGS)};
-const movies = {json.dumps([m["title"] for m in MOVIES])};
-const users = [...new Set(ratings.map(r => r.user_id))];
-const select = document.getElementById("target");
-select.innerHTML = users.map(u => `<option>${{u}}</option>`).join("");
-select.value = "Karen";
-function vector(user) {{
-  const rows = ratings.filter(r => r.user_id === user);
-  return Object.fromEntries(rows.map(r => [movies[r.movie_id - 1], r.rating]));
-}}
-function pearson(a, b) {{
-  const va = vector(a), vb = vector(b);
-  const common = movies.filter(m => va[m] != null && vb[m] != null);
-  if (common.length < 2) return null;
-  const ma = common.reduce((s,m)=>s+va[m],0)/common.length;
-  const mb = common.reduce((s,m)=>s+vb[m],0)/common.length;
-  let num=0, da=0, db=0;
-  for (const m of common) {{ const x=va[m]-ma, y=vb[m]-mb; num+=x*y; da+=x*x; db+=y*y; }}
-  return num / Math.sqrt(da * db);
-}}
-function render() {{
-  const target = select.value;
-  const rows = users.filter(u => u !== target).map(u => ({{u, s: pearson(target, u)}})).filter(r => r.s != null).sort((a,b)=>b.s-a.s);
-  document.getElementById("out").innerHTML = rows.map(r => `<div class="card"><h2>${{r.u}}</h2><div class="bar" style="width:${{Math.max(8, (r.s + 1) * 50)}}%"></div><p>Similarity: ${{r.s.toFixed(2)}}</p></div>`).join("");
-}}
-select.addEventListener("change", render); render();
-</script></main></body></html>"""
-    (DEMOS / "similarity_neighbor_demo.html").write_text(similarity, encoding="utf-8")
-
-    item_item = f"""<!doctype html><html><head><meta charset="utf-8"><title>Item-Item Prediction</title>{HTML_STYLE}</head><body><main>
-<h1>Item-Item Prediction</h1>
-<p>Karen has rated Star Wars, Jurassic Park, Terminator 2, and The Matrix. Estimate Independence Day from similar rated items.</p>
-<section class="grid">
-<div class="card"><h2>Star Wars</h2><div class="bar" style="width:85%"></div><p>Similarity 0.85, Karen rating 7</p></div>
-<div class="card"><h2>Jurassic Park</h2><div class="bar" style="width:45%"></div><p>Similarity 0.45, Karen rating 4</p></div>
-<div class="card"><h2>Terminator 2</h2><div class="bar" style="width:60%; background:#d97706"></div><p>Similarity -0.60, Karen rating 3</p></div>
-</section>
-<h2>Weighted estimate</h2>
-<p class="card">((7 x 0.85) + (4 x 0.45) + (3 x -0.60)) / (0.85 + 0.45 + 0.60) = <strong>about 3.13</strong>. If negative similarity is handled as inverse evidence, the interpretation changes, which is why implementation choices matter.</p>
-</main></body></html>"""
-    (DEMOS / "item_item_prediction_demo.html").write_text(item_item, encoding="utf-8")
-
-    graph = f"""<!doctype html><html><head><meta charset="utf-8"><title>Graph PPR</title>{HTML_STYLE}</head><body><main>
-<h1>Bipartite Graph and Personalized PageRank</h1>
-<p>Start from Karen, follow liked-movie edges, then pass through users with overlapping taste to discover unseen movies.</p>
-<section class="card">
-  <span class="node user">Karen</span><span class="edge">liked</span><span class="node item">Star Wars</span>
-  <span class="edge">shared by</span><span class="node user">Alice</span><span class="edge">liked</span><span class="node item">Blade Runner</span>
-  <span class="edge">recommended</span>
-</section>
-<section class="grid">
-  <div class="card"><h2>Restart</h2><p>The walk repeatedly returns to Karen, keeping recommendations personalized.</p></div>
-  <div class="card"><h2>Propagation</h2><p>Scores travel through users and movies connected by positive interactions.</p></div>
-  <div class="card"><h2>Filtering</h2><p>Movies Karen already rated are removed before ranking unseen items.</p></div>
-</section>
-</main></body></html>"""
-    (DEMOS / "graph_ppr_demo.html").write_text(graph, encoding="utf-8")
+    DEMOS.mkdir(parents=True, exist_ok=True)
+    for stale_demo in DEMOS.glob("*.html"):
+        if stale_demo.name != "index.html":
+            stale_demo.unlink()
+    index = DEMOS / "index.html"
+    if index.exists():
+        # Keep the curated single-page real-world demo intact when rebuilding notebooks.
+        return
+    index.write_text(
+        """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chapter 3 Collaborative Filtering</title></head><body><main><h1>Chapter 3 Collaborative Filtering</h1><p>This chapter uses one integrated HTML demo. If this fallback appears, regenerate the curated index.html from the repository version.</p></main></body></html>""",
+        encoding="utf-8",
+    )
 
 
 def build() -> None:

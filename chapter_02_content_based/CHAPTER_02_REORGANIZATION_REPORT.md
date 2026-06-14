@@ -71,16 +71,10 @@ The new notebooks map to the Chapter 2 slide topics:
 - Graph-based content recommendation: Notebook 06
 - Context-aware, explainable, zero-shot, and generative stubs: Notebook 07
 
-## Real-World HTML Demos
+## Real-World HTML Demo
 
-Additional standalone visual demos were added under `html_demos/` based on the Chapter 2 practical topics:
+The chapter now keeps one standalone visual demo under `html_demos/`:
 
 - `index.html`
-- `real_world_tfidf_search_demo.html`
-- `semantic_vs_keyword_demo.html`
-- `graph_content_explorer_demo.html`
-- `multimodal_poster_recommender_demo.html`
-- `context_aware_reranking_demo.html`
-- `zero_shot_discovery_demo.html`
 
-These demos use real movie posters, interactive search, context controls, graph visualization, and visual recommendation cards so students can see recommendation behavior rather than only reading code output.
+The single page combines the Chapter 2 practical topics into one streaming-style recommender with real posters, text matching, profile ranking, graph overlap, context re-ranking, explanations, and Top-K evaluation.

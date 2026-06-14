@@ -50,6 +50,14 @@ chapter_03_collaborative_filtering/
 - Added minimum-overlap, shrinkage, clustering, temporal weighting, graph PPR, and hybrid fallback examples because these are explicitly covered in the Chapter 3 slides.
 - Left the existing root-level notebooks untouched while keeping the Chapter 3 folder focused on the seven practical notebooks.
 
+## Real-World HTML Demo
+
+The chapter keeps one standalone visual demo under `html_demos/`:
+
+- `index.html`
+
+The single page combines the Chapter 3 practical topics into one collaborative-filtering cinema recommender with real posters, rating-matrix inspection, user-user and item-item prediction, cold-start fallback, temporal weighting, graph-style explanation, and Top-K evaluation.
+
 ## Suggested Cleanup Later
 
 - After review, consider archiving or moving the old root-level Chapter 3 notebooks.

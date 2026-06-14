@@ -27,15 +27,11 @@ The examples use a compact movie-rating matrix based on the Chapter 3 lecture ex
 
 ## HTML Demos
 
-The `html_demos/` folder contains standalone lecture demos:
+The `html_demos/` folder contains one standalone real-world classroom demo:
 
 - `index.html`
-- `user_item_matrix_demo.html`
-- `similarity_neighbor_demo.html`
-- `item_item_prediction_demo.html`
-- `graph_ppr_demo.html`
 
-These files can be opened directly in a browser. Start with `html_demos/index.html`.
+This single page uses real movie posters and combines the main Chapter 3 ideas in one cinema recommendation application: the user-item matrix, sparsity, user-user similarity, item-item similarity, kNN prediction, cold-start fallback, temporal weighting, graph-style explanation, and Top-K evaluation. It can be opened directly in a browser.
 
 ## Optional Dependencies
 
