@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import json
-import shutil
 from itertools import count
 from pathlib import Path
 
@@ -11,7 +10,6 @@ ROOT = Path(__file__).resolve().parents[1]
 CHAPTER = ROOT / "chapter_03_collaborative_filtering"
 DATA = CHAPTER / "data"
 DEMOS = CHAPTER / "html_demos"
-EXERCISES = CHAPTER / "slide_exercises"
 
 
 MOVIES = [
@@ -125,7 +123,6 @@ def write_notebook(name: str, cells: list[dict], folder: Path = CHAPTER) -> None
 def write_data() -> None:
     DATA.mkdir(parents=True, exist_ok=True)
     DEMOS.mkdir(parents=True, exist_ok=True)
-    EXERCISES.mkdir(parents=True, exist_ok=True)
     with (DATA / "movies_chapter3.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=list(MOVIES[0]))
         writer.writeheader()
@@ -806,14 +803,7 @@ This folder contains the reorganized practical material for Chapter 3. The noteb
 | 06 | `06_cold_start_sparsity_clustering_temporal.ipynb` | Cold start, sparsity, shrinkage, clustering, time decay |
 | 07 | `07_graph_ppr_explainable_hybrid_cf.ipynb` | Bipartite graph, Personalized PageRank, path explanations, hybrid fallback |
 
-## Slide Exercises
-
-The `slide_exercises/` folder keeps the existing Chapter 3 practical notebooks as reference material:
-
-1. `01_Chapter3_CF_Practical.ipynb`
-2. `02_Chapter3_CF_Practical_Enhanced.ipynb`
-
-The seven notebooks above are the recommended first path for students. The slide exercises preserve the broader existing practicals for extension, comparison, or Colab use.
+These seven notebooks are the single recommended student path for Chapter 3. Extra exercise copies are not kept in a separate folder, so students do not have to choose between duplicate paths.
 
 ## Data
 
@@ -869,7 +859,7 @@ The repository already contained two root-level Chapter 3 notebooks:
 - `Chapter3_CF_Practical.ipynb`
 - `Chapter3_CF_Practical_Enhanced.ipynb`
 
-Those notebooks were preserved and copied into `slide_exercises/` for continuity. No existing files were deleted.
+Those notebooks remain at the repository root as reference material. They are not copied into the Chapter 3 folder, because the chapter folder should expose one clear student path.
 
 ## Implemented Structure
 
@@ -886,7 +876,6 @@ chapter_03_collaborative_filtering/
   07_graph_ppr_explainable_hybrid_cf.ipynb
   data/
   html_demos/
-  slide_exercises/
   README.md
   CHAPTER_03_REORGANIZATION_REPORT.md
 ```
@@ -897,7 +886,7 @@ chapter_03_collaborative_filtering/
 - Used local CSV files so notebooks run without remote downloads.
 - Used a compact rating matrix close to the lecture examples, with enough additional interactions for evaluation and graph examples.
 - Added minimum-overlap, shrinkage, clustering, temporal weighting, graph PPR, and hybrid fallback examples because these are explicitly covered in the Chapter 3 slides.
-- Preserved the existing root-level notebooks as reference slide exercises rather than replacing them.
+- Left the existing root-level notebooks untouched while keeping the Chapter 3 folder focused on the seven practical notebooks.
 
 ## Suggested Cleanup Later
 
@@ -1036,28 +1025,6 @@ select.addEventListener("change", render); render();
     (DEMOS / "graph_ppr_demo.html").write_text(graph, encoding="utf-8")
 
 
-def copy_slide_exercises() -> None:
-    copies = [
-        (ROOT / "Chapter3_CF_Practical.ipynb", EXERCISES / "01_Chapter3_CF_Practical.ipynb"),
-        (ROOT / "Chapter3_CF_Practical_Enhanced.ipynb", EXERCISES / "02_Chapter3_CF_Practical_Enhanced.ipynb"),
-    ]
-    for src, dst in copies:
-        if src.exists():
-            shutil.copy2(src, dst)
-    (EXERCISES / "README.md").write_text(
-        """# Chapter 3 Slide Exercises
-
-These notebooks preserve the existing Chapter 3 practical material from the repository root:
-
-- `01_Chapter3_CF_Practical.ipynb`
-- `02_Chapter3_CF_Practical_Enhanced.ipynb`
-
-Use these as extended exercises after students complete the seven-notebook practical path in the parent folder.
-""",
-        encoding="utf-8",
-    )
-
-
 def build() -> None:
     write_data()
     write_notebook("01_user_item_matrix_and_sparsity.ipynb", notebook_01())
@@ -1067,7 +1034,6 @@ def build() -> None:
     write_notebook("05_evaluation_precision_recall_mae.ipynb", notebook_05())
     write_notebook("06_cold_start_sparsity_clustering_temporal.ipynb", notebook_06())
     write_notebook("07_graph_ppr_explainable_hybrid_cf.ipynb", notebook_07())
-    copy_slide_exercises()
     write_html()
     write_readme()
     write_report()

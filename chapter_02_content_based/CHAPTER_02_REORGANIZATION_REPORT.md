@@ -42,25 +42,11 @@ chapter_02_content_based/
   07_context_explainable_zero_shot_demo.ipynb
   html_demos/
   data/
-  slide_exercises/
   README.md
   CHAPTER_02_REORGANIZATION_REPORT.md
 ```
 
-Added slide exercise notebooks:
-
-```text
-chapter_02_content_based/slide_exercises/
-  01_TFIDF_MovieRecommender_Expanded.ipynb
-  02_SBERT_MovieRecommender.ipynb
-  03_GraphCB_MovieRecommender_NodeVectors.ipynb
-  04_MultiModal_MovieRecommender.ipynb
-  05_ContextAware_MovieRecommender.ipynb
-  06_ZeroShot_Generative_Recommender.ipynb
-  README.md
-```
-
-The six slide exercises were refined to remove duplicate setup patterns, avoid mandatory model downloads, and explain the main functions used in each exercise. The multi-modal exercise keeps the real poster URLs from the previous notebook so students can see visual recommendation results, while still including fallback image features if downloads or CLIP are unavailable. The slide name `ZeroShot_Generative_Recommender.ipynb` is preserved in the new exercise sequence; the existing source notebook in the repository is named `Zero_Shot_Generative_Recommender.ipynb`.
+The chapter folder exposes one clear seven-notebook path at its root. Extra slide-exercise notebooks are not copied into a separate subfolder, because that creates a second path for students.
 
 ## Files to Keep, Move, or Deprecate Later
 
@@ -87,7 +73,7 @@ The new notebooks map to the Chapter 2 slide topics:
 
 ## Real-World HTML Demos
 
-Additional standalone visual demos were added under `html_demos/` based on the slide exercises:
+Additional standalone visual demos were added under `html_demos/` based on the Chapter 2 practical topics:
 
 - `index.html`
 - `real_world_tfidf_search_demo.html`

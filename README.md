@@ -68,4 +68,4 @@ Start there for the student-facing sequence:
 6. Cold start, sparsity, shrinkage, clustering, and temporal dynamics
 7. Graph-based collaborative filtering with Personalized PageRank and hybrid fallback
 
-The older root-level Chapter 3 notebooks are kept for reference in the new Chapter 3 `slide_exercises/` folder.
+The older root-level Chapter 3 notebooks are kept only as reference material; the Chapter 3 folder itself now has one clear seven-notebook path.

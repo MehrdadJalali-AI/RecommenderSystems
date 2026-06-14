@@ -14,14 +14,7 @@ This folder contains the reorganized practical material for Chapter 3. The noteb
 | 06 | `06_cold_start_sparsity_clustering_temporal.ipynb` | Cold start, sparsity, shrinkage, clustering, time decay |
 | 07 | `07_graph_ppr_explainable_hybrid_cf.ipynb` | Bipartite graph, Personalized PageRank, path explanations, hybrid fallback |
 
-## Slide Exercises
-
-The `slide_exercises/` folder keeps the existing Chapter 3 practical notebooks as reference material:
-
-1. `01_Chapter3_CF_Practical.ipynb`
-2. `02_Chapter3_CF_Practical_Enhanced.ipynb`
-
-The seven notebooks above are the recommended first path for students. The slide exercises preserve the broader existing practicals for extension, comparison, or Colab use.
+These seven notebooks are the single recommended student path for Chapter 3. Extra exercise copies are not kept in a separate folder, so students do not have to choose between duplicate paths.
 
 ## Data
 

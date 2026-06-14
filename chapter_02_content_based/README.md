@@ -14,18 +14,7 @@ This folder contains the reorganized practical material for Chapter 2. The noteb
 | 06 | `06_graph_based_content_recommender.ipynb` | Content graph, NetworkX fallback, optional Node2Vec |
 | 07 | `07_context_explainable_zero_shot_demo.ipynb` | Context re-ranking, explanations, zero-shot style search |
 
-## Slide Exercises
-
-The `slide_exercises/` folder contains refined versions of the six exercise notebooks referenced in the Chapter 2 slides:
-
-1. `01_TFIDF_MovieRecommender_Expanded.ipynb`
-2. `02_SBERT_MovieRecommender.ipynb`
-3. `03_GraphCB_MovieRecommender_NodeVectors.ipynb`
-4. `04_MultiModal_MovieRecommender.ipynb`
-5. `05_ContextAware_MovieRecommender.ipynb`
-6. `06_ZeroShot_Generative_Recommender.ipynb`
-
-Each exercise includes a short `Main functions used` section. These notebooks are applied extensions, while the seven notebooks above remain the recommended first path for students.
+These seven notebooks are the single recommended student path for Chapter 2. Extra slide-exercise copies are not kept in a separate folder, so students do not have to choose between duplicate paths.
 
 ## Data
 

@@ -21,7 +21,7 @@ The repository already contained two root-level Chapter 3 notebooks:
 - `Chapter3_CF_Practical.ipynb`
 - `Chapter3_CF_Practical_Enhanced.ipynb`
 
-Those notebooks were preserved and copied into `slide_exercises/` for continuity. No existing files were deleted.
+Those notebooks remain at the repository root as reference material. They are not copied into the Chapter 3 folder, because the chapter folder should expose one clear student path.
 
 ## Implemented Structure
 
@@ -38,7 +38,6 @@ chapter_03_collaborative_filtering/
   07_graph_ppr_explainable_hybrid_cf.ipynb
   data/
   html_demos/
-  slide_exercises/
   README.md
   CHAPTER_03_REORGANIZATION_REPORT.md
 ```
@@ -49,7 +48,7 @@ chapter_03_collaborative_filtering/
 - Used local CSV files so notebooks run without remote downloads.
 - Used a compact rating matrix close to the lecture examples, with enough additional interactions for evaluation and graph examples.
 - Added minimum-overlap, shrinkage, clustering, temporal weighting, graph PPR, and hybrid fallback examples because these are explicitly covered in the Chapter 3 slides.
-- Preserved the existing root-level notebooks as reference slide exercises rather than replacing them.
+- Left the existing root-level notebooks untouched while keeping the Chapter 3 folder focused on the seven practical notebooks.
 
 ## Suggested Cleanup Later
 

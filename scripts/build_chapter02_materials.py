@@ -10,7 +10,6 @@ ROOT = Path(__file__).resolve().parents[1]
 CHAPTER = ROOT / "chapter_02_content_based"
 DATA = CHAPTER / "data"
 DEMOS = CHAPTER / "html_demos"
-EXERCISES = CHAPTER / "slide_exercises"
 
 
 MOVIES = [
@@ -244,7 +243,6 @@ def write_notebook(name: str, cells: list[dict], folder: Path = CHAPTER) -> None
 def write_data() -> None:
     DATA.mkdir(parents=True, exist_ok=True)
     DEMOS.mkdir(parents=True, exist_ok=True)
-    EXERCISES.mkdir(parents=True, exist_ok=True)
     with (DATA / "movies_chapter2.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=list(MOVIES[0]))
         writer.writeheader()
@@ -1625,7 +1623,7 @@ def slide_exercise_06_zeroshot() -> list[dict]:
         md("""
 # Slide Exercise 06: Zero-Shot and Generative Recommender
 
-This is the refined version of `Zero_Shot_Generative_Recommender.ipynb` and matches the slide exercise name `ZeroShot_Generative_Recommender.ipynb`.
+This is the refined version of `Zero_Shot_Generative_Recommender.ipynb` and keeps the compact notebook name `ZeroShot_Generative_Recommender.ipynb`.
 
 Learning objectives:
 - Search movies with natural-language queries.
@@ -1715,33 +1713,6 @@ Student task:
     ]
 
 
-def write_slide_exercises() -> None:
-    write_notebook("01_TFIDF_MovieRecommender_Expanded.ipynb", slide_exercise_01_tfidf(), EXERCISES)
-    write_notebook("02_SBERT_MovieRecommender.ipynb", slide_exercise_02_sbert(), EXERCISES)
-    write_notebook("03_GraphCB_MovieRecommender_NodeVectors.ipynb", slide_exercise_03_graph(), EXERCISES)
-    write_notebook("04_MultiModal_MovieRecommender.ipynb", slide_exercise_04_multimodal(), EXERCISES)
-    write_notebook("05_ContextAware_MovieRecommender.ipynb", slide_exercise_05_context(), EXERCISES)
-    write_notebook("06_ZeroShot_Generative_Recommender.ipynb", slide_exercise_06_zeroshot(), EXERCISES)
-    (EXERCISES / "README.md").write_text(
-        """# Chapter 2 Slide Exercises
-
-These notebooks are refined versions of the six exercise notebooks referenced in the Chapter 2 slides. They are kept separate from the seven core practical notebooks to avoid duplication:
-
-| Slide exercise | Refined notebook | Source / note |
-| --- | --- | --- |
-| 1 | `01_TFIDF_MovieRecommender_Expanded.ipynb` | Refines `TFIDF_MovieRecommender_Expanded.ipynb` |
-| 2 | `02_SBERT_MovieRecommender.ipynb` | Refines `SBERT_MovieRecommender.ipynb` with fallback logic |
-| 3 | `03_GraphCB_MovieRecommender_NodeVectors.ipynb` | Refines graph recommendation without requiring node-vector packages |
-| 4 | `04_MultiModal_MovieRecommender.ipynb` | Refines multi-modal fusion with real poster URLs and fallback image features |
-| 5 | `05_ContextAware_MovieRecommender.ipynb` | Refines context-aware and explainable recommendation |
-| 6 | `06_ZeroShot_Generative_Recommender.ipynb` | Slide-style name; source file in repo is `Zero_Shot_Generative_Recommender.ipynb` |
-
-Each exercise includes a `Main functions used` section so students can connect the code to the library calls.
-""",
-        encoding="utf-8",
-    )
-
-
 def write_readme() -> None:
     (CHAPTER / "README.md").write_text(
         """# Chapter 2: Content-Based Recommendation
@@ -1760,18 +1731,7 @@ This folder contains the reorganized practical material for Chapter 2. The noteb
 | 06 | `06_graph_based_content_recommender.ipynb` | Content graph, NetworkX fallback, optional Node2Vec |
 | 07 | `07_context_explainable_zero_shot_demo.ipynb` | Context re-ranking, explanations, zero-shot style search |
 
-## Slide Exercises
-
-The `slide_exercises/` folder contains refined versions of the six exercise notebooks referenced in the Chapter 2 slides:
-
-1. `01_TFIDF_MovieRecommender_Expanded.ipynb`
-2. `02_SBERT_MovieRecommender.ipynb`
-3. `03_GraphCB_MovieRecommender_NodeVectors.ipynb`
-4. `04_MultiModal_MovieRecommender.ipynb`
-5. `05_ContextAware_MovieRecommender.ipynb`
-6. `06_ZeroShot_Generative_Recommender.ipynb`
-
-Each exercise includes a short `Main functions used` section. These notebooks are applied extensions, while the seven notebooks above remain the recommended first path for students.
+These seven notebooks are the single recommended student path for Chapter 2. Extra slide-exercise copies are not kept in a separate folder, so students do not have to choose between duplicate paths.
 
 ## Data
 
@@ -1854,25 +1814,11 @@ chapter_02_content_based/
   07_context_explainable_zero_shot_demo.ipynb
   html_demos/
   data/
-  slide_exercises/
   README.md
   CHAPTER_02_REORGANIZATION_REPORT.md
 ```
 
-Added slide exercise notebooks:
-
-```text
-chapter_02_content_based/slide_exercises/
-  01_TFIDF_MovieRecommender_Expanded.ipynb
-  02_SBERT_MovieRecommender.ipynb
-  03_GraphCB_MovieRecommender_NodeVectors.ipynb
-  04_MultiModal_MovieRecommender.ipynb
-  05_ContextAware_MovieRecommender.ipynb
-  06_ZeroShot_Generative_Recommender.ipynb
-  README.md
-```
-
-The six slide exercises were refined to remove duplicate setup patterns, avoid mandatory model downloads, and explain the main functions used in each exercise. The multi-modal exercise keeps the real poster URLs from the previous notebook so students can see visual recommendation results, while still including fallback image features if downloads or CLIP are unavailable. The slide name `ZeroShot_Generative_Recommender.ipynb` is preserved in the new exercise sequence; the existing source notebook in the repository is named `Zero_Shot_Generative_Recommender.ipynb`.
+The chapter folder exposes one clear seven-notebook path at its root. Extra slide-exercise notebooks are not copied into a separate subfolder, because that creates a second path for students.
 
 ## Files to Keep, Move, or Deprecate Later
 
@@ -1899,7 +1845,7 @@ The new notebooks map to the Chapter 2 slide topics:
 
 ## Real-World HTML Demos
 
-Additional standalone visual demos were added under `html_demos/` based on the slide exercises:
+Additional standalone visual demos were added under `html_demos/` based on the Chapter 2 practical topics:
 
 - `index.html`
 - `real_world_tfidf_search_demo.html`
@@ -2245,7 +2191,7 @@ def write_real_world_html() -> None:
     (DEMOS / "index.html").write_text(
         real_world_html_page(
             "Chapter 2 Real-World Demo Hub",
-            """Choose a demo below. These mini-apps connect the Chapter 2 slide exercises to visual, classroom-ready recommendation scenarios.
+            """Choose a demo below. These mini-apps connect the Chapter 2 practical topics to visual, classroom-ready recommendation scenarios.
 <section class="panel">
   <div class="grid" id="demoGrid"></div>
 </section>""",
@@ -2712,7 +2658,6 @@ def main() -> None:
     write_notebook("05_sbert_semantic_recommender.ipynb", notebook_05())
     write_notebook("06_graph_based_content_recommender.ipynb", notebook_06())
     write_notebook("07_context_explainable_zero_shot_demo.ipynb", notebook_07())
-    write_slide_exercises()
     write_readme()
     write_report()
     write_html()
