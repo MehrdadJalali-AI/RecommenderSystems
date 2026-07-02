@@ -224,13 +224,24 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-DATA_DIR = Path("data")
-if not (DATA_DIR / "movies_chapter2.csv").exists():
-    DATA_DIR = Path("../data")
-if not (DATA_DIR / "movies_chapter2.csv").exists():
-    DATA_DIR = Path("chapter_02_content_based/data")
+DATA_DIRS = [
+    Path("data"),
+    Path("../data"),
+    Path("chapter_02_content_based/data"),
+]
+GITHUB_DATA_URL = "https://raw.githubusercontent.com/MehrdadJalali-AI/RecommenderSystems/main/chapter_02_content_based/data"
 
-movies = pd.read_csv(DATA_DIR / "movies_chapter2.csv")
+def read_chapter2_csv(filename):
+    for data_dir in DATA_DIRS:
+        csv_path = data_dir / filename
+        if csv_path.exists():
+            print(f"Loaded {filename} from {csv_path}")
+            return pd.read_csv(csv_path)
+    url = f"{GITHUB_DATA_URL}/{filename}"
+    print(f"Local file not found. Loading {filename} from GitHub raw URL.")
+    return pd.read_csv(url)
+
+movies = read_chapter2_csv("movies_chapter2.csv")
 movies.head()
 """
 
@@ -504,7 +515,7 @@ Slide connection: user profiles, similarity matching, ranking, and Top-N recomme
 """),
         md("Load movie metadata and a small set of user interactions."),
         code(COMMON_LOAD + r"""
-interactions = pd.read_csv(DATA_DIR / "user_interactions_chapter2.csv")
+interactions = read_chapter2_csv("user_interactions_chapter2.csv")
 interactions.head()
 """),
         md("Create an item-feature matrix from genres, directors, and text. This gives the user profile a mix of structured and textual evidence."),

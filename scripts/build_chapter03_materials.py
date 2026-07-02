@@ -101,14 +101,25 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-DATA_DIR = Path("data")
-if not (DATA_DIR / "ratings_chapter3.csv").exists():
-    DATA_DIR = Path("../data")
-if not (DATA_DIR / "ratings_chapter3.csv").exists():
-    DATA_DIR = Path("chapter_03_collaborative_filtering/data")
+DATA_DIRS = [
+    Path("data"),
+    Path("../data"),
+    Path("chapter_03_collaborative_filtering/data"),
+]
+GITHUB_DATA_URL = "https://raw.githubusercontent.com/MehrdadJalali-AI/RecommenderSystems/main/chapter_03_collaborative_filtering/data"
 
-ratings = pd.read_csv(DATA_DIR / "ratings_chapter3.csv")
-movies = pd.read_csv(DATA_DIR / "movies_chapter3.csv")
+def read_chapter3_csv(filename):
+    for data_dir in DATA_DIRS:
+        csv_path = data_dir / filename
+        if csv_path.exists():
+            print(f"Loaded {filename} from {csv_path}")
+            return pd.read_csv(csv_path)
+    url = f"{GITHUB_DATA_URL}/{filename}"
+    print(f"Local file not found. Loading {filename} from GitHub raw URL.")
+    return pd.read_csv(url)
+
+ratings = read_chapter3_csv("ratings_chapter3.csv")
+movies = read_chapter3_csv("movies_chapter3.csv")
 ratings_named = ratings.merge(movies, on="movie_id", how="left")
 rating_matrix = ratings_named.pivot_table(index="user_id", columns="title", values="rating")
 rating_matrix
