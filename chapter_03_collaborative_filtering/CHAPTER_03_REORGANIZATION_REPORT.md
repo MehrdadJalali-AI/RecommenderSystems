@@ -2,7 +2,7 @@
 
 ## Source Alignment
 
-The structure is based on `RS_C3_V2.pdf`, Chapter 3: Collaborative Filtering - Memory-Based. The deck topics include:
+The structure is based on `RS_C3_V4.pdf`, Chapter 3: Collaborative Filtering - Memory-Based. The revised deck topics include:
 
 - Why collaborative filtering and when it works.
 - Memory-based collaborative filtering.
@@ -11,8 +11,9 @@ The structure is based on `RS_C3_V2.pdf`, Chapter 3: Collaborative Filtering - M
 - Cosine, Pearson, and Jaccard similarity.
 - Mean-centered kNN prediction.
 - Evaluation with Precision@K, Recall@K, and MAE.
-- Cold start, sparsity, popularity bias, scalability, and mitigations.
-- Clustering, temporal dynamics, graph-based CF, Personalized PageRank, explainability, hybrid fallback, and POI extensions.
+- Cold start, sparsity, popularity bias, scalability, and practical mitigations.
+- Clustering to reduce the neighbor search space.
+- Temporal dynamics and time-decay weighting.
 
 ## Repository Findings
 
@@ -21,7 +22,7 @@ The repository already contained two root-level Chapter 3 notebooks:
 - `Chapter3_CF_Practical.ipynb`
 - `Chapter3_CF_Practical_Enhanced.ipynb`
 
-Those notebooks remain at the repository root as reference material. They are not copied into the Chapter 3 folder, because the chapter folder should expose one clear student path.
+Those notebooks were moved into `chapter_03_collaborative_filtering/archive/` as legacy reference material, because the chapter folder should expose one clear student path.
 
 ## Implemented Structure
 
@@ -35,7 +36,10 @@ chapter_03_collaborative_filtering/
   04_item_item_collaborative_filtering.ipynb
   05_evaluation_precision_recall_mae.ipynb
   06_cold_start_sparsity_clustering_temporal.ipynb
-  07_graph_ppr_explainable_hybrid_cf.ipynb
+  archive/
+    Chapter3_CF_Practical_legacy.ipynb
+    Chapter3_CF_Practical_Enhanced_legacy.ipynb
+    07_graph_ppr_explainable_hybrid_cf.ipynb
   data/
   html_demos/
   README.md
@@ -46,20 +50,13 @@ chapter_03_collaborative_filtering/
 
 - Kept the practical path beginner-friendly and sequential, mirroring the Chapter 2 organization.
 - Used local CSV files so notebooks run without remote downloads.
-- Used a compact rating matrix close to the lecture examples, with enough additional interactions for evaluation and graph examples.
-- Added minimum-overlap, shrinkage, clustering, temporal weighting, graph PPR, and hybrid fallback examples because these are explicitly covered in the Chapter 3 slides.
-- Left the existing root-level notebooks untouched while keeping the Chapter 3 folder focused on the seven practical notebooks.
-
-## Real-World HTML Demo
-
-The chapter keeps one standalone visual demo under `html_demos/`:
-
-- `index.html`
-
-The single page combines the Chapter 3 practical topics into one collaborative-filtering cinema recommender with real posters, rating-matrix inspection, user-user and item-item prediction, cold-start fallback, temporal weighting, graph-style explanation, and Top-K evaluation.
+- Used a compact rating matrix close to the lecture examples, with enough additional interactions for evaluation, clustering, and temporal dynamics.
+- Kept only memory-based CF topics from the revised slides: cosine, Pearson, Jaccard, top-k neighbors, user-user prediction, item-item prediction, evaluation, cold start, sparsity, popularity bias, clustering, and temporal weighting.
+- Removed graph-based CF, Personalized PageRank, path explanations, and hybrid graph fallback from the student path.
+- Added the three requested student challenges: neighborhood size, cosine versus Pearson, and cold-start concept check.
+- Archived the existing root-level Chapter 3 notebooks while keeping the Chapter 3 folder focused on the six practical notebooks.
 
 ## Suggested Cleanup Later
 
-- After review, consider archiving or moving the old root-level Chapter 3 notebooks.
 - If the course uses MovieLens in class, optionally add one advanced notebook that repeats the same pipeline on `Datasets/ml-latest-small`.
-- The POI topic is currently represented in the root `POI_Recommender_Yelp.ipynb`; it can later become an optional Chapter 3 extension or a later applied module.
+- The archived graph/PPR notebook can be reused in a future advanced chapter if graph-based collaborative filtering returns to the course.

@@ -1,6 +1,6 @@
 # 🎓 Advanced Recommender Systems – Course Materials  
 This repository contains practical Jupyter/Colab notebooks developed for the course *Applied Recommender Systems*.  
-The materials currently include structured practical paths for **Chapter 2: Content-Based Recommendation** and **Chapter 3: Memory-Based Collaborative Filtering**, plus the original root-level notebooks kept as reference material.
+The materials currently include structured practical paths for **Chapter 2: Content-Based Recommendation** and **Chapter 3: Memory-Based Collaborative Filtering**.
 
 ---
 
@@ -65,7 +65,6 @@ Start there for the student-facing sequence:
 3. User-user kNN prediction with neighbor explanations
 4. Item-item collaborative filtering and cached similarity intuition
 5. Evaluation with MAE, Precision@K, Recall@K, and HitRate@K
-6. Cold start, sparsity, shrinkage, clustering, and temporal dynamics
-7. Graph-based collaborative filtering with Personalized PageRank and hybrid fallback
+6. Cold start, sparsity, popularity bias, clustering, temporal dynamics, and the three Chapter 3 challenges
 
-The older root-level Chapter 3 notebooks are kept only as reference material; the Chapter 3 folder itself now has one clear seven-notebook path.
+The older root-level Chapter 3 notebooks have been moved into `chapter_03_collaborative_filtering/archive/` as legacy reference material. Students should use the six-notebook path above for the revised Chapter 3 lecture.

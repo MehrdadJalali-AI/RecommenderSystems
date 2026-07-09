@@ -213,11 +213,12 @@ Learning objectives:
 - Compute user-user similarity on co-rated items.
 - Compare cosine and Pearson similarity for explicit ratings.
 - Use Jaccard similarity for binary interactions.
-- Apply minimum-overlap and shrinkage to reduce noisy similarities.
+- Use overlap counts to judge whether a similarity value is trustworthy.
 
-Slide connection: similarity measures, cosine equation, Pearson equation, and sparse overlap.
+Slide connection: similarity measures, cosine equation, Pearson equation, Jaccard similarity, and sparse overlap.
 """),
         code(COMMON_LOAD),
+        md("The helper functions below compare users only on items that both users rated. Missing values stay missing; they are not treated as zero ratings."),
         code(r"""
 def common_ratings(matrix, user_a, user_b):
     pair = matrix.loc[[user_a, user_b]].dropna(axis=1)
@@ -275,23 +276,14 @@ def similarity_matrix(metric):
 pearson_sim = similarity_matrix(pearson_on_overlap)
 pearson_sim.round(2)
 """),
-        md("Shrinkage discounts similarities based on very small overlap."),
+        md("Small overlap can make a similarity score unstable. Here we keep the raw similarity and show the overlap count next to it so students can judge the evidence."),
         code(r"""
-def shrink_similarity(similarity, overlap_count, alpha=3):
-    if pd.isna(similarity):
-        return np.nan
-    return similarity * overlap_count / (overlap_count + alpha)
-
-similarities["pearson_shrunk"] = similarities.apply(
-    lambda row: shrink_similarity(row["pearson"], row["co_rated_items"], alpha=3),
-    axis=1,
-)
-similarities.sort_values("pearson_shrunk", ascending=False).round(3)
+similarities[["other_user", "co_rated_items", "cosine", "pearson", "jaccard_liked"]].round(3)
 """),
         md("""
 Exercises:
 1. Change the liked threshold for Jaccard from 5 to 6.
-2. Increase the shrinkage alpha. Which neighbors lose influence?
+2. Which user has high similarity but only a small number of co-rated items?
 """),
     ]
 
@@ -310,6 +302,7 @@ Learning objectives:
 Slide connection: user-user CF, making predictions, prediction formula, and explainable memory-based CF.
 """),
         code(COMMON_LOAD),
+        md("First, find users who have rated at least two of the same movies as the target user. Pearson is calculated only on those co-rated movies."),
         code(r"""
 def pearson_on_overlap(matrix, user_a, user_b):
     pair = matrix.loc[[user_a, user_b]].dropna(axis=1)
@@ -330,14 +323,16 @@ def user_neighbors(matrix, target_user, min_overlap=2):
 
 user_neighbors(rating_matrix, "Karen")
 """),
+        md("The prediction starts from the target user's average rating. Each neighbor then contributes how much their rating for the target item is above or below their own average."),
         code(r"""
-def predict_user_user(matrix, target_user, item, k=3, min_overlap=2, positive_only=True):
+def predict_user_user(matrix, target_user, target_item, k_neighbors=3, min_overlap=2, positive_only=True):
     target_mean = matrix.loc[target_user].mean()
     neighbors = user_neighbors(matrix, target_user, min_overlap=min_overlap)
-    neighbors = neighbors[neighbors["neighbor"].map(lambda u: not pd.isna(matrix.loc[u, item]))]
+    neighbors = neighbors[neighbors["neighbor"].map(lambda u: not pd.isna(matrix.loc[u, target_item]))]
     if positive_only:
+        # In this introductory notebook, negative similarities are excluded because they indicate opposite taste.
         neighbors = neighbors[neighbors["similarity"] > 0]
-    neighbors = neighbors.head(k)
+    neighbors = neighbors.head(k_neighbors)
     if neighbors.empty:
         return np.nan, neighbors
 
@@ -348,14 +343,14 @@ def predict_user_user(matrix, target_user, item, k=3, min_overlap=2, positive_on
         u = row["neighbor"]
         sim = row["similarity"]
         neighbor_mean = matrix.loc[u].mean()
-        centered_rating = matrix.loc[u, item] - neighbor_mean
+        centered_rating = matrix.loc[u, target_item] - neighbor_mean
         contribution = sim * centered_rating
         numerator += contribution
         denominator += abs(sim)
         rows.append({
             "neighbor": u,
             "similarity": sim,
-            "neighbor_rating": matrix.loc[u, item],
+            "neighbor_rating": matrix.loc[u, target_item],
             "neighbor_mean": neighbor_mean,
             "centered_rating": centered_rating,
             "weighted_contribution": contribution,
@@ -363,16 +358,21 @@ def predict_user_user(matrix, target_user, item, k=3, min_overlap=2, positive_on
     prediction = target_mean + numerator / denominator if denominator else np.nan
     return prediction, pd.DataFrame(rows)
 
-pred, evidence = predict_user_user(rating_matrix, "Karen", "Independence Day", k=3)
+target_user = "Karen"
+target_item = "Independence Day"
+k_neighbors = 3
+
+pred, evidence = predict_user_user(rating_matrix, target_user, target_item, k_neighbors=k_neighbors)
 print(f"Predicted Karen rating for Independence Day: {pred:.2f}")
 evidence.round(3)
 """),
+        md("Now repeat the same prediction for every movie the target user has not rated, then rank the predicted ratings."),
         code(r"""
-def recommend_user_user(matrix, target_user, n=5, k=3):
+def recommend_user_user(matrix, target_user, n=5, k_neighbors=3):
     unseen_items = matrix.columns[matrix.loc[target_user].isna()]
     rows = []
     for item in unseen_items:
-        pred, evidence = predict_user_user(matrix, target_user, item, k=k)
+        pred, evidence = predict_user_user(matrix, target_user, item, k_neighbors=k_neighbors)
         if not pd.isna(pred):
             rows.append({
                 "user": target_user,
@@ -382,17 +382,12 @@ def recommend_user_user(matrix, target_user, n=5, k=3):
             })
     return pd.DataFrame(rows).sort_values("predicted_rating", ascending=False).head(n)
 
-recommend_user_user(rating_matrix, "Karen", n=5, k=3).round(2)
-"""),
-        code(r"""
-pred, evidence = predict_user_user(rating_matrix, "Alice", "Blade Runner", k=3)
-print("Already rated items are normally filtered out for recommendation.")
-evidence.round(3)
+recommend_user_user(rating_matrix, target_user, n=5, k_neighbors=k_neighbors).round(2)
 """),
         md("""
 Exercises:
 1. Predict a rating for Alice on Toy Story.
-2. Compare k=1 and k=3. Which explanation is easier to trust?
+2. Compare `k_neighbors = 1` and `k_neighbors = 3`. Which explanation is easier to trust?
 """),
     ]
 
@@ -411,6 +406,7 @@ Learning objectives:
 Slide connection: item-item CF concept, item-item prediction example, and scalability.
 """),
         code(COMMON_LOAD),
+        md("Item-item CF compares columns of the user-item matrix. Two movies are compared only using users who rated both movies."),
         code(r"""
 def item_pearson(matrix, item_a, item_b):
     pair = matrix[[item_a, item_b]].dropna()
@@ -428,13 +424,15 @@ for a in items:
 
 item_sim.round(2)
 """),
+        md("For one target item, inspect which other movies are most similar based on shared user ratings."),
         code(r"""
 target_item = "Independence Day"
 item_sim[target_item].drop(target_item).sort_values(ascending=False).round(3)
 """),
+        md("To predict a user's missing rating, use similar items the same user has already rated. Negative item similarities are skipped in the beginner version because they indicate opposite rating patterns."),
         code(r"""
-def predict_item_item(matrix, user, target_item, k=3, positive_only=False):
-    rated = matrix.loc[user].dropna()
+def predict_item_item(matrix, target_user, target_item, k_neighbors=3, positive_only=True):
+    rated = matrix.loc[target_user].dropna()
     candidates = []
     for item, rating in rated.items():
         sim = item_sim.loc[target_item, item]
@@ -444,26 +442,30 @@ def predict_item_item(matrix, user, target_item, k=3, positive_only=False):
             continue
         candidates.append({"rated_item": item, "rating": rating, "similarity": sim})
     evidence = pd.DataFrame(candidates, columns=["rated_item", "rating", "similarity"])
-    evidence = evidence.sort_values("similarity", ascending=False).head(k)
+    evidence = evidence.sort_values("similarity", ascending=False).head(k_neighbors)
     if evidence.empty:
         return np.nan, evidence
     numerator = (evidence["rating"] * evidence["similarity"]).sum()
     denominator = evidence["similarity"].abs().sum()
     return numerator / denominator if denominator else np.nan, evidence
 
-pred, evidence = predict_item_item(rating_matrix, "Karen", "Independence Day", k=3)
+target_user = "Karen"
+k_neighbors = 3
+
+pred, evidence = predict_item_item(rating_matrix, target_user, target_item, k_neighbors=k_neighbors)
 print(f"Predicted Karen rating for Independence Day: {pred:.2f}")
 evidence.round(3)
 """),
+        md("The recommender applies the same item-item prediction to every unseen movie and returns the highest predicted ratings."),
         code(r"""
-def recommend_item_item(matrix, user, n=5, k=3):
-    unseen_items = matrix.columns[matrix.loc[user].isna()]
+def recommend_item_item(matrix, target_user, n=5, k_neighbors=3):
+    unseen_items = matrix.columns[matrix.loc[target_user].isna()]
     rows = []
     for item in unseen_items:
-        pred, evidence = predict_item_item(matrix, user, item, k=k, positive_only=True)
+        pred, evidence = predict_item_item(matrix, target_user, item, k_neighbors=k_neighbors, positive_only=True)
         if not pd.isna(pred):
             rows.append({
-                "user": user,
+                "user": target_user,
                 "recommended_movie": item,
                 "predicted_rating": pred,
                 "similar_rated_items": ", ".join(evidence["rated_item"].tolist()),
@@ -474,7 +476,7 @@ recommend_item_item(rating_matrix, "Karen").round(2)
 """),
         md("""
 Exercises:
-1. Turn `positive_only` off and inspect whether negative item similarity helps or hurts.
+1. Try `positive_only=False` and inspect whether negative item similarity helps or hurts.
 2. Which item similarities are based on too few co-ratings?
 """),
     ]
@@ -633,13 +635,15 @@ def notebook_06() -> list[dict]:
 
 Learning objectives:
 - Detect cold-start users and items.
-- Apply minimum-overlap and shrinkage.
+- Discuss sparsity, popularity bias, and cold start.
 - Cluster users to reduce neighbor search.
 - Add time-decay weights to recent interactions.
+- Complete three short Chapter 3 challenges.
 
 Slide connection: limits of memory-based CF, practical mitigations, clustering for scalability, and temporal dynamics.
 """),
         code(COMMON_LOAD),
+        md("Cold-start users and cold-start items have too few interactions for reliable memory-based CF."),
         code(r"""
 user_counts = ratings_named.groupby("user_id").size().rename("ratings_count")
 item_counts = ratings_named.groupby("title").size().rename("ratings_count")
@@ -649,25 +653,22 @@ display(user_counts[user_counts <= 2])
 print("Cold-start-like items:")
 display(item_counts[item_counts <= 2])
 """),
+        md("Sparsity means that most user-item pairs are unknown. Popularity bias means popular items get more evidence and may be recommended more often."),
         code(r"""
-def pearson_with_shrinkage(matrix, user_a, user_b, min_overlap=2, alpha=3):
-    pair = matrix.loc[[user_a, user_b]].dropna(axis=1)
-    overlap = pair.shape[1]
-    if overlap < min_overlap:
-        return np.nan
-    if pair.loc[user_a].std() == 0 or pair.loc[user_b].std() == 0:
-        return np.nan
-    raw = np.corrcoef(pair.loc[user_a], pair.loc[user_b])[0, 1]
-    return raw * overlap / (overlap + alpha)
+n_users, n_items = rating_matrix.shape
+known_ratings = rating_matrix.notna().sum().sum()
+sparsity = 1 - known_ratings / (n_users * n_items)
 
-rows = []
-for other in rating_matrix.index.drop("Karen"):
-    rows.append({
-        "neighbor": other,
-        "shrunk_similarity": pearson_with_shrinkage(rating_matrix, "Karen", other),
-    })
-pd.DataFrame(rows).sort_values("shrunk_similarity", ascending=False).round(3)
+popularity = (
+    ratings_named.groupby("title")["rating"]
+    .agg(ratings_count="count", mean_rating="mean")
+    .sort_values(["ratings_count", "mean_rating"], ascending=False)
+)
+
+print(f"Matrix sparsity: {sparsity:.1%}")
+popularity.head(5).round(2)
 """),
+        md("One scalability mitigation is to compare the target user only with users in the same cluster. Here we fill missing values with item means only for clustering, not as real ratings."),
         code(r"""
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
@@ -684,6 +685,7 @@ target_cluster = clusters.loc[target_user]
 candidate_neighbors = clusters[clusters.eq(target_cluster)].index.drop(target_user)
 print(f"Compare Karen only with users in cluster {target_cluster}: {candidate_neighbors.tolist()}")
 """),
+        md("Temporal dynamics give more weight to recent interactions. A larger decay value makes older ratings fade more quickly."),
         code(r"""
 decay_lambda = 0.01
 ratings_named["time_weight"] = np.exp(-decay_lambda * ratings_named["days_ago"])
@@ -701,97 +703,96 @@ recent_profile = (
 recent_profile.head(5).round(2)
 """),
         md("""
-Exercises:
-1. Increase `decay_lambda`. Which older ratings fade fastest?
-2. Change the number of clusters and compare neighbor candidates.
-"""),
-    ]
+# Challenge 1 - Change the Neighborhood Size
 
+## Goal
 
-def notebook_07() -> list[dict]:
-    return [
-        md("""
-# Chapter 3 Practical 07: Graph-Based and Explainable Collaborative Filtering
+Investigate how the number of neighbors influences a prediction.
 
-Learning objectives:
-- Build a bipartite user-item graph.
-- Run Personalized PageRank from a target user.
-- Recommend unseen items from graph scores.
-- Explain recommendations using paths and neighbor evidence.
-- Add a simple hybrid fallback for cold start.
+1. Run the existing prediction using the current value of `k_neighbors`.
+2. Change the value of `k_neighbors`, for example:
 
-Slide connection: bipartite graphs, Personalized PageRank, graph-based CF benefits, explainable CF, and cold-start fallback.
-"""),
-        code(COMMON_LOAD),
-        code(r"""
-import networkx as nx
+```python
+k_neighbors = 2
+```
 
-G = nx.Graph()
-for user in ratings_named["user_id"].unique():
-    G.add_node(f"user:{user}", kind="user", label=user)
-for _, row in movies.iterrows():
-    G.add_node(f"item:{row['title']}", kind="item", label=row["title"], genre=row["genre"])
-for _, row in ratings_named.iterrows():
-    if row["rating"] >= 4:
-        G.add_edge(f"user:{row['user_id']}", f"item:{row['title']}", weight=row["rating"])
+and then:
 
-print(nx.info(G) if hasattr(nx, "info") else f"{G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
+```python
+k_neighbors = 5
+```
+
+3. Rerun the recommendation or rating-prediction code.
+4. Compare the predicted rating or recommendation list.
 """),
         code(r"""
-target_user = "Karen"
-seed = {node: 0 for node in G.nodes}
-seed[f"user:{target_user}"] = 1
+# Challenge 1: Write or modify your code here
 
-ppr = nx.pagerank(G, alpha=0.85, personalization=seed, weight="weight")
-seen = set(rating_matrix.loc[target_user].dropna().index)
 
-recommendations = []
-for node, score in ppr.items():
-    if node.startswith("item:"):
-        title = node.removeprefix("item:")
-        if title not in seen:
-            recommendations.append({"recommended_movie": title, "ppr_score": score})
 
-pd.DataFrame(recommendations).sort_values("ppr_score", ascending=False).head(5)
-"""),
-        code(r"""
-def explain_graph_recommendation(graph, user, item, max_paths=3):
-    source = f"user:{user}"
-    target = f"item:{item}"
-    paths = []
-    for path in nx.all_simple_paths(graph, source, target, cutoff=4):
-        paths.append(" -> ".join(node.replace("user:", "").replace("item:", "") for node in path))
-        if len(paths) >= max_paths:
-            break
-    return paths
-
-explain_graph_recommendation(G, "Karen", "Blade Runner")
-"""),
-        code(r"""
-def hybrid_recommend(user, n=5):
-    if user in rating_matrix.index and rating_matrix.loc[user].notna().sum() >= 2:
-        seed = {node: 0 for node in G.nodes}
-        seed[f"user:{user}"] = 1
-        scores = nx.pagerank(G, alpha=0.85, personalization=seed, weight="weight")
-        seen = set(rating_matrix.loc[user].dropna().index)
-        rows = []
-        for node, score in scores.items():
-            if node.startswith("item:"):
-                title = node.removeprefix("item:")
-                if title not in seen:
-                    rows.append({"movie": title, "score": score, "source": "graph_cf"})
-        return pd.DataFrame(rows).sort_values("score", ascending=False).head(n)
-
-    popular = ratings_named.groupby("title")["rating"].agg(["count", "mean"])
-    popular["score"] = popular["mean"] * np.log1p(popular["count"])
-    return popular.sort_values("score", ascending=False).head(n).reset_index().assign(source="popular_fallback")
-
-hybrid_recommend("NewStudent")
 """),
         md("""
-Exercises:
-1. Add genre nodes to the graph and connect movies to genres.
-2. Compare graph recommendations with item-item recommendations for Karen.
+> **Your observations:**
+> How did changing `k` affect the prediction or recommendation results?
+> Why can using too few or too many neighbors influence the result?
+"""),
+        md("""
+# Challenge 2 - Compare Cosine and Pearson Similarity
+
+## Goal
+
+Investigate whether the selected similarity measure changes the neighbors and recommendations.
+
+1. Run User-User CF using cosine similarity.
+2. Change the code to use Pearson correlation.
+3. Compare:
+
+- the top-k neighbors,
+- similarity values,
+- the predicted rating or recommendation list.
+"""),
+        code(r"""
+# Challenge 2: Modify the similarity method and rerun the recommender
+
+
+
+"""),
+        md("""
+> **Your observations:**
+> Did cosine similarity and Pearson correlation select the same neighbors?
+> Which method appeared more suitable for these users, and why?
+"""),
+        md("""
+# Challenge 3 - Concept Check: Cold Start
+
+This challenge does not require programming.
+
+> A new user joins a movie platform but has not rated, liked, or watched any movies.
+> At the same time, a newly released movie has not yet received any interactions.
+
+Answer:
+
+1. Why can standard memory-based collaborative filtering not provide reliable personalized recommendations in these two cases?
+2. Suggest one practical solution for the new user.
+3. Suggest one practical solution for the new item.
+
+> **Your explanation:**
+>
+> New-user problem:
+>
+> ................................................................................
+>
+> Suggested solution:
+>
+> ................................................................................
+>
+> New-item problem:
+>
+> ................................................................................
+>
+> Suggested solution:
+>
+> ................................................................................
 """),
     ]
 
@@ -800,21 +801,20 @@ def write_readme() -> None:
     (CHAPTER / "README.md").write_text(
         """# Chapter 3: Collaborative Filtering - Memory-Based
 
-This folder contains the reorganized practical material for Chapter 3. The notebooks move from the user-item matrix to user-user, item-item, evaluation, mitigation, and graph-based collaborative filtering.
+This folder contains the reorganized practical material for Chapter 3. The notebooks move from the user-item matrix to user-user CF, item-item CF, evaluation, and practical challenges.
 
 ## Notebook Path
 
 | Order | Notebook | Main idea |
 | --- | --- | --- |
 | 01 | `01_user_item_matrix_and_sparsity.ipynb` | User-item matrix, missing values, density, sparsity, co-rating overlap |
-| 02 | `02_similarity_measures_for_cf.ipynb` | Cosine, Pearson, Jaccard, minimum overlap, shrinkage |
+| 02 | `02_similarity_measures_for_cf.ipynb` | Cosine, Pearson, Jaccard, and co-rated-item overlap |
 | 03 | `03_user_user_knn_prediction.ipynb` | User-user nearest neighbors, mean-centered weighted prediction, explanations |
 | 04 | `04_item_item_collaborative_filtering.ipynb` | Item-item similarity, item-based prediction, cached similarity intuition |
 | 05 | `05_evaluation_precision_recall_mae.ipynb` | Leave-one-out split, MAE, Precision@K, Recall@K, HitRate@K |
-| 06 | `06_cold_start_sparsity_clustering_temporal.ipynb` | Cold start, sparsity, shrinkage, clustering, time decay |
-| 07 | `07_graph_ppr_explainable_hybrid_cf.ipynb` | Bipartite graph, Personalized PageRank, path explanations, hybrid fallback |
+| 06 | `06_cold_start_sparsity_clustering_temporal.ipynb` | Cold start, sparsity, popularity bias, clustering, time decay, and the three Chapter 3 challenges |
 
-These seven notebooks are the single recommended student path for Chapter 3. Extra exercise copies are not kept in a separate folder, so students do not have to choose between duplicate paths.
+These six notebooks are the single recommended student path for Chapter 3. Advanced graph-based material has been moved out of the student path because it is no longer part of the revised chapter.
 
 ## Data
 
@@ -823,7 +823,7 @@ The `data/` folder contains small local CSV files used across the notebooks:
 - `movies_chapter3.csv`
 - `ratings_chapter3.csv`
 
-The examples use a compact movie-rating matrix based on the Chapter 3 lecture examples, with a few extra users and movies for evaluation, clustering, temporal dynamics, and graph demos.
+The examples use a compact movie-rating matrix based on the Chapter 3 lecture examples, with a few extra users and movies for evaluation, clustering, and temporal dynamics.
 
 ## HTML Demos
 
@@ -831,11 +831,11 @@ The `html_demos/` folder contains one standalone real-world classroom demo:
 
 - `index.html`
 
-This single page uses real movie posters and combines the main Chapter 3 ideas in one cinema recommendation application: the user-item matrix, sparsity, user-user similarity, item-item similarity, kNN prediction, cold-start fallback, temporal weighting, graph-style explanation, and Top-K evaluation. It can be opened directly in a browser.
+This single page gives a compact overview of the revised Chapter 3 practical path and links students to the six notebooks. It can be opened directly in a browser.
 
 ## Optional Dependencies
 
-The core notebooks use `pandas`, `numpy`, `scikit-learn`, `matplotlib`, and `networkx`. The examples are deliberately small so students can inspect intermediate tables and understand each step.
+The core notebooks use `pandas`, `numpy`, `scikit-learn`, and `matplotlib`. The examples are deliberately small so students can inspect intermediate tables and understand each step.
 """,
         encoding="utf-8",
     )
@@ -847,7 +847,7 @@ def write_report() -> None:
 
 ## Source Alignment
 
-The structure is based on `RS_C3_V2.pdf`, Chapter 3: Collaborative Filtering - Memory-Based. The deck topics include:
+The structure is based on `RS_C3_V4.pdf`, Chapter 3: Collaborative Filtering - Memory-Based. The revised deck topics include:
 
 - Why collaborative filtering and when it works.
 - Memory-based collaborative filtering.
@@ -856,8 +856,9 @@ The structure is based on `RS_C3_V2.pdf`, Chapter 3: Collaborative Filtering - M
 - Cosine, Pearson, and Jaccard similarity.
 - Mean-centered kNN prediction.
 - Evaluation with Precision@K, Recall@K, and MAE.
-- Cold start, sparsity, popularity bias, scalability, and mitigations.
-- Clustering, temporal dynamics, graph-based CF, Personalized PageRank, explainability, hybrid fallback, and POI extensions.
+- Cold start, sparsity, popularity bias, scalability, and practical mitigations.
+- Clustering to reduce the neighbor search space.
+- Temporal dynamics and time-decay weighting.
 
 ## Repository Findings
 
@@ -866,7 +867,7 @@ The repository already contained two root-level Chapter 3 notebooks:
 - `Chapter3_CF_Practical.ipynb`
 - `Chapter3_CF_Practical_Enhanced.ipynb`
 
-Those notebooks remain at the repository root as reference material. They are not copied into the Chapter 3 folder, because the chapter folder should expose one clear student path.
+Those notebooks were moved into `chapter_03_collaborative_filtering/archive/` as legacy reference material, because the chapter folder should expose one clear student path.
 
 ## Implemented Structure
 
@@ -880,7 +881,10 @@ chapter_03_collaborative_filtering/
   04_item_item_collaborative_filtering.ipynb
   05_evaluation_precision_recall_mae.ipynb
   06_cold_start_sparsity_clustering_temporal.ipynb
-  07_graph_ppr_explainable_hybrid_cf.ipynb
+  archive/
+    Chapter3_CF_Practical_legacy.ipynb
+    Chapter3_CF_Practical_Enhanced_legacy.ipynb
+    07_graph_ppr_explainable_hybrid_cf.ipynb
   data/
   html_demos/
   README.md
@@ -891,15 +895,16 @@ chapter_03_collaborative_filtering/
 
 - Kept the practical path beginner-friendly and sequential, mirroring the Chapter 2 organization.
 - Used local CSV files so notebooks run without remote downloads.
-- Used a compact rating matrix close to the lecture examples, with enough additional interactions for evaluation and graph examples.
-- Added minimum-overlap, shrinkage, clustering, temporal weighting, graph PPR, and hybrid fallback examples because these are explicitly covered in the Chapter 3 slides.
-- Left the existing root-level notebooks untouched while keeping the Chapter 3 folder focused on the seven practical notebooks.
+- Used a compact rating matrix close to the lecture examples, with enough additional interactions for evaluation, clustering, and temporal dynamics.
+- Kept only memory-based CF topics from the revised slides: cosine, Pearson, Jaccard, top-k neighbors, user-user prediction, item-item prediction, evaluation, cold start, sparsity, popularity bias, clustering, and temporal weighting.
+- Removed graph-based CF, Personalized PageRank, path explanations, and hybrid graph fallback from the student path.
+- Added the three requested student challenges: neighborhood size, cosine versus Pearson, and cold-start concept check.
+- Archived the existing root-level Chapter 3 notebooks while keeping the Chapter 3 folder focused on the six practical notebooks.
 
 ## Suggested Cleanup Later
 
-- After review, consider archiving or moving the old root-level Chapter 3 notebooks.
 - If the course uses MovieLens in class, optionally add one advanced notebook that repeats the same pipeline on `Datasets/ml-latest-small`.
-- The POI topic is currently represented in the root `POI_Recommender_Yelp.ipynb`; it can later become an optional Chapter 3 extension or a later applied module.
+- The archived graph/PPR notebook can be reused in a future advanced chapter if graph-based collaborative filtering returns to the course.
 """,
         encoding="utf-8",
     )
@@ -938,11 +943,40 @@ def write_html() -> None:
         if stale_demo.name != "index.html":
             stale_demo.unlink()
     index = DEMOS / "index.html"
-    if index.exists():
-        # Keep the curated single-page real-world demo intact when rebuilding notebooks.
-        return
     index.write_text(
-        """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chapter 3 Collaborative Filtering</title></head><body><main><h1>Chapter 3 Collaborative Filtering</h1><p>This chapter uses one integrated HTML demo. If this fallback appears, regenerate the curated index.html from the repository version.</p></main></body></html>""",
+        """<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Chapter 3 Memory-Based Collaborative Filtering</title>
+  <style>
+    :root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1f2933; background: #f6f7f9; }
+    body { margin: 0; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px 18px 44px; }
+    h1 { margin: 0 0 10px; font-size: clamp(2rem, 5vw, 3.6rem); letter-spacing: 0; }
+    p { line-height: 1.55; color: #52606d; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 22px; }
+    a { display: block; min-height: 118px; padding: 16px; border: 1px solid #d9e2ec; border-radius: 8px; background: #fff; color: #102a43; text-decoration: none; }
+    strong { display: block; margin-bottom: 8px; }
+    span { color: #627d98; line-height: 1.45; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Chapter 3: Memory-Based Collaborative Filtering</h1>
+    <p>Use these notebooks in order. The revised path focuses on user-item matrices, cosine, Pearson, Jaccard, user-user CF, item-item CF, simple evaluation, cold start, sparsity, clustering, and temporal dynamics.</p>
+    <section class="grid">
+      <a href="../01_user_item_matrix_and_sparsity.ipynb"><strong>01 Matrix and Sparsity</strong><span>Load ratings, build the user-item matrix, and inspect missing values.</span></a>
+      <a href="../02_similarity_measures_for_cf.ipynb"><strong>02 Similarity Measures</strong><span>Compare cosine, Pearson, and Jaccard on appropriate shared evidence.</span></a>
+      <a href="../03_user_user_knn_prediction.ipynb"><strong>03 User-User CF</strong><span>Find top-k neighbors and predict a missing rating.</span></a>
+      <a href="../04_item_item_collaborative_filtering.ipynb"><strong>04 Item-Item CF</strong><span>Recommend items related to those already liked.</span></a>
+      <a href="../05_evaluation_precision_recall_mae.ipynb"><strong>05 Evaluation</strong><span>Use MAE, Precision@K, Recall@K, and HitRate@K.</span></a>
+      <a href="../06_cold_start_sparsity_clustering_temporal.ipynb"><strong>06 Practical Challenges</strong><span>Explore neighborhood size, similarity choice, cold start, clustering, and time decay.</span></a>
+    </section>
+  </main>
+</body>
+</html>""",
         encoding="utf-8",
     )
 
@@ -955,7 +989,6 @@ def build() -> None:
     write_notebook("04_item_item_collaborative_filtering.ipynb", notebook_04())
     write_notebook("05_evaluation_precision_recall_mae.ipynb", notebook_05())
     write_notebook("06_cold_start_sparsity_clustering_temporal.ipynb", notebook_06())
-    write_notebook("07_graph_ppr_explainable_hybrid_cf.ipynb", notebook_07())
     write_html()
     write_readme()
     write_report()
