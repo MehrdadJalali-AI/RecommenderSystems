@@ -96,6 +96,18 @@ def code(text: str) -> dict:
     }
 
 
+def challenge_code(number: int) -> dict:
+    return code(f"""
+# Challenge {number}
+# Modify or extend the code as described above.
+
+# Write your code below:
+
+
+
+""")
+
+
 COMMON_LOAD = r"""
 import pandas as pd
 import numpy as np
@@ -197,9 +209,79 @@ overlap
 ratings_named.groupby("title")["rating"].agg(["count", "mean"]).sort_values(["count", "mean"], ascending=False)
 """),
         md("""
-Exercises:
-1. Add a new user with only one rating. What happens to overlap?
-2. Which movies are easiest to recommend with CF, and why?
+# Challenges
+
+### Challenge 1 — Add a Sparse New User
+
+**Goal:**
+Investigate how a user with very few ratings changes the user-item matrix and co-rated-item overlap.
+
+**What to do:**
+
+1. Add a new user with only one movie rating to `ratings_named`.
+2. Rebuild `rating_matrix` from the updated data.
+3. Rerun the sparsity and overlap cells.
+4. Compare the new user's overlap with the existing users.
+"""),
+        challenge_code(1),
+        md("""
+### Your observations
+
+What happened to matrix sparsity? How much overlap did the new user have with other users? Why does this make memory-based CF difficult?
+
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+"""),
+        md("""
+### Challenge 2 — Add a Rating for a Rare Movie
+
+**Goal:**
+Investigate how adding one extra interaction changes item popularity and available evidence.
+
+**What to do:**
+
+1. Choose a movie with a low `ratings_count` in the popularity table.
+2. Add one new rating for that movie.
+3. Rebuild the matrix and rerun the popularity summary.
+4. Compare the movie's count and mean rating before and after the change.
+"""),
+        challenge_code(2),
+        md("""
+### Your observations
+
+Which movie changed most? Did one extra rating make the item easier to use in collaborative filtering? Why?
+
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+"""),
+        md("""
+### Challenge 3 — Concept Check: Missing Ratings
+
+This challenge requires **no programming**.
+
+A user has not rated `Titanic`. The rating matrix shows this as a missing value.
+
+Explain in your own words why this missing value should not be treated as a real rating of zero.
+
+### Your explanation
+
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
 """),
     ]
 
@@ -281,9 +363,79 @@ pearson_sim.round(2)
 similarities[["other_user", "co_rated_items", "cosine", "pearson", "jaccard_liked"]].round(3)
 """),
         md("""
-Exercises:
-1. Change the liked threshold for Jaccard from 5 to 6.
-2. Which user has high similarity but only a small number of co-rated items?
+# Challenges
+
+### Challenge 1 — Change the Target User
+
+**Goal:**
+Investigate whether a different target user has different nearest neighbors.
+
+**What to do:**
+
+1. Change the existing `target` variable from `"Karen"` to another user, such as `"Alice"` or `"Sally"`.
+2. Rerun the similarity table.
+3. Compare cosine, Pearson, Jaccard, and `co_rated_items`.
+4. Identify which neighbors changed.
+"""),
+        challenge_code(1),
+        md("""
+### Your observations
+
+Which neighbors changed when you changed the target user? Did all similarity measures rank users in the same order? Which measure looked most reasonable?
+
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+"""),
+        md("""
+### Challenge 2 — Change the Jaccard Like Threshold
+
+**Goal:**
+Investigate how the definition of "liked" changes binary Jaccard similarity.
+
+**What to do:**
+
+1. In `jaccard_liked`, change `threshold=5` to `threshold=6`.
+2. Rerun the similarity table for the same target user.
+3. Compare the Jaccard values before and after the change.
+4. Explain why some values changed more than others.
+"""),
+        challenge_code(2),
+        md("""
+### Your observations
+
+Which users had different Jaccard similarity values? Did cosine or Pearson change when the Jaccard threshold changed? Why?
+
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+"""),
+        md("""
+### Challenge 3 — Concept Check: Small Overlap
+
+This challenge requires **no programming**.
+
+Two users have a very high similarity score, but they have only one or two co-rated movies.
+
+Explain why this similarity value may be less reliable than a slightly lower score based on many co-rated movies.
+
+### Your explanation
+
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
 """),
     ]
 
@@ -385,9 +537,79 @@ def recommend_user_user(matrix, target_user, n=5, k_neighbors=3):
 recommend_user_user(rating_matrix, target_user, n=5, k_neighbors=k_neighbors).round(2)
 """),
         md("""
-Exercises:
-1. Predict a rating for Alice on Toy Story.
-2. Compare `k_neighbors = 1` and `k_neighbors = 3`. Which explanation is easier to trust?
+# Challenges
+
+### Challenge 1 — Change the Neighborhood Size
+
+**Goal:**
+Investigate how the number of nearest neighbors changes a user-user prediction.
+
+**What to do:**
+
+1. Change the existing `k_neighbors` value from `3` to `1`.
+2. Rerun the prediction and recommendation cells.
+3. Change `k_neighbors` again to `5`.
+4. Compare the predicted rating and supporting neighbors.
+"""),
+        challenge_code(1),
+        md("""
+### Your observations
+
+How did the prediction change when `k_neighbors` changed? Which value gave the clearest explanation? Why can too few or too many neighbors be risky?
+
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+"""),
+        md("""
+### Challenge 2 — Change the Target User and Item
+
+**Goal:**
+Investigate whether the same user-user CF method behaves differently for another prediction target.
+
+**What to do:**
+
+1. Change `target_user` from `"Karen"` to `"Alice"`.
+2. Change `target_item` to an unseen movie for Alice, such as `"Toy Story"`.
+3. Rerun the neighbor, prediction, and recommendation cells.
+4. Compare the new evidence table with the original one.
+"""),
+        challenge_code(2),
+        md("""
+### Your observations
+
+Did the selected neighbors change? Was there enough neighbor evidence for the new target item? How did the explanation differ from Karen's prediction?
+
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+"""),
+        md("""
+### Challenge 3 — Concept Check: Negative Similarity
+
+This challenge requires **no programming**.
+
+In the notebook, negative similarities are excluded from the beginner prediction.
+
+Explain what a negative user-user similarity means and why including it without explanation could confuse a simple rating prediction.
+
+### Your explanation
+
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
 """),
     ]
 
@@ -475,9 +697,79 @@ def recommend_item_item(matrix, target_user, n=5, k_neighbors=3):
 recommend_item_item(rating_matrix, "Karen").round(2)
 """),
         md("""
-Exercises:
-1. Try `positive_only=False` and inspect whether negative item similarity helps or hurts.
-2. Which item similarities are based on too few co-ratings?
+# Challenges
+
+### Challenge 1 — Change the Target Item
+
+**Goal:**
+Investigate how item-item evidence changes when the target item changes.
+
+**What to do:**
+
+1. Change `target_item` from `"Independence Day"` to another unseen item for Karen.
+2. Rerun the item similarity and prediction cells.
+3. Inspect the `evidence` table.
+4. Compare the similar rated items with the original result.
+"""),
+        challenge_code(1),
+        md("""
+### Your observations
+
+Which rated items supported the new prediction? Were the similarities based on enough shared users? Did the predicted rating increase or decrease?
+
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+"""),
+        md("""
+### Challenge 2 — Include Negative Item Similarities
+
+**Goal:**
+Investigate how negative item similarity can affect item-item predictions.
+
+**What to do:**
+
+1. In `predict_item_item`, call the function with `positive_only=False`.
+2. Rerun the prediction for the same `target_user` and `target_item`.
+3. Compare the evidence table with the positive-only version.
+4. Explain whether the negative similarities made the result easier or harder to interpret.
+"""),
+        challenge_code(2),
+        md("""
+### Your observations
+
+Did any negative similarities appear? How did the predicted rating change? Would you keep or exclude negative similarities for a beginner recommender?
+
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+"""),
+        md("""
+### Challenge 3 — Concept Check: Item-Item Scalability
+
+This challenge requires **no programming**.
+
+Many platforms have millions of users but a smaller and more stable catalog of items.
+
+Explain why item-item collaborative filtering can be easier to cache and serve than comparing a target user with every other user.
+
+### Your explanation
+
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
 """),
     ]
 
@@ -621,9 +913,79 @@ pd.DataFrame({
 }).round(3)
 """),
         md("""
-Exercises:
-1. Change the relevant threshold from 5 to 6.
-2. Use a larger test split and compare whether the model ranking changes.
+# Challenges
+
+### Challenge 1 — Change the Relevance Threshold
+
+**Goal:**
+Investigate how the definition of a relevant item changes Precision@K and Recall@K.
+
+**What to do:**
+
+1. In `evaluate_topk`, change `relevant_threshold` from `5` to `6`.
+2. Rerun the popularity and user-user evaluation cells.
+3. Compare Precision@3, Recall@3, and HitRate@3 with the original result.
+4. Explain why stricter relevance can change the metrics.
+"""),
+        challenge_code(1),
+        md("""
+### Your observations
+
+Which metric changed most? Did both models change in the same way? What does a stricter relevance threshold mean for evaluation?
+
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+"""),
+        md("""
+### Challenge 2 — Change the Recommendation List Length
+
+**Goal:**
+Investigate how evaluating a longer recommendation list changes top-k metrics.
+
+**What to do:**
+
+1. Change the evaluation value of `k` from `3` to `5`.
+2. Rerun `evaluate_topk` for the popularity and user-user recommenders.
+3. Update the summary table labels so they describe `Precision@5`, `Recall@5`, and `HitRate@5`.
+4. Compare the new metrics with the original @3 result.
+"""),
+        challenge_code(2),
+        md("""
+### Your observations
+
+Did Precision decrease or increase when `k` became larger? Did Recall change differently from Precision? Why can this happen?
+
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+"""),
+        md("""
+### Challenge 3 — Concept Check: Rating Error vs Top-K Quality
+
+This challenge requires **no programming**.
+
+A model has a low MAE, but its top-3 recommendation list contains no relevant items for a user.
+
+Explain why rating-prediction accuracy and recommendation-list quality are related but not the same thing.
+
+### Your explanation
+
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
 """),
     ]
 
@@ -703,94 +1065,83 @@ recent_profile = (
 recent_profile.head(5).round(2)
 """),
         md("""
-# Challenge 1 - Change the Neighborhood Size
+# Challenges
 
-## Goal
+### Challenge 1 — Change the Number of Clusters
 
-Investigate how the number of neighbors influences a prediction.
+**Goal:**
+Investigate how clustering changes the reduced neighbor search space.
 
-1. Run the existing prediction using the current value of `k_neighbors`.
-2. Change the value of `k_neighbors`, for example:
+**What to do:**
 
-```python
-k_neighbors = 2
-```
-
-and then:
-
-```python
-k_neighbors = 5
-```
-
-3. Rerun the recommendation or rating-prediction code.
-4. Compare the predicted rating or recommendation list.
+1. Change `n_clusters=3` in the `KMeans` cell to `2`.
+2. Rerun the clustering and candidate-neighbor cells.
+3. Change `n_clusters` to `4` and rerun the same cells.
+4. Compare the candidate neighbors for `target_user`.
 """),
-        code(r"""
-# Challenge 1: Write or modify your code here
+        challenge_code(1),
+        md("""
+### Your observations
 
+How did the candidate-neighbor list change? Which cluster setting gave a useful search space? Why can too many or too few clusters be a problem?
 
-
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
 """),
         md("""
-> **Your observations:**
-> How did changing `k` affect the prediction or recommendation results?
-> Why can using too few or too many neighbors influence the result?
+### Challenge 2 — Change the Time-Decay Rate
+
+**Goal:**
+Investigate how stronger or weaker time decay changes the time-weighted popularity ranking.
+
+**What to do:**
+
+1. Change `decay_lambda` from `0.01` to `0.03`.
+2. Rerun the time-weight and `recent_profile` cells.
+3. Change `decay_lambda` to `0.001` and rerun the same cells.
+4. Compare which movies move up or down in the time-weighted ranking.
+"""),
+        challenge_code(2),
+        md("""
+### Your observations
+
+Which movies benefited most from stronger time decay? Which older interactions lost influence? When would time decay be useful in a recommender?
+
+> Write your observations here:
+>
+> ................................................................................
+>
+> ................................................................................
+>
+> ................................................................................
 """),
         md("""
-# Challenge 2 - Compare Cosine and Pearson Similarity
+### Challenge 3 — Concept Check: Cold Start and Popularity Bias
 
-## Goal
-
-Investigate whether the selected similarity measure changes the neighbors and recommendations.
-
-1. Run User-User CF using cosine similarity.
-2. Change the code to use Pearson correlation.
-3. Compare:
-
-- the top-k neighbors,
-- similarity values,
-- the predicted rating or recommendation list.
-"""),
-        code(r"""
-# Challenge 2: Modify the similarity method and rerun the recommender
-
-
-
-"""),
-        md("""
-> **Your observations:**
-> Did cosine similarity and Pearson correlation select the same neighbors?
-> Which method appeared more suitable for these users, and why?
-"""),
-        md("""
-# Challenge 3 - Concept Check: Cold Start
-
-This challenge does not require programming.
+This challenge requires **no programming**.
 
 > A new user joins a movie platform but has not rated, liked, or watched any movies.
 > At the same time, a newly released movie has not yet received any interactions.
 
-Answer:
+Explain in your own words:
 
 1. Why can standard memory-based collaborative filtering not provide reliable personalized recommendations in these two cases?
 2. Suggest one practical solution for the new user.
 3. Suggest one practical solution for the new item.
+4. Why can always falling back to popular items reduce recommendation diversity?
 
-> **Your explanation:**
->
-> New-user problem:
+### Your explanation
 >
 > ................................................................................
 >
-> Suggested solution:
->
 > ................................................................................
 >
-> New-item problem:
->
 > ................................................................................
->
-> Suggested solution:
 >
 > ................................................................................
 """),
