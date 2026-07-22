@@ -1,6 +1,6 @@
 # 🎓 Advanced Recommender Systems – Course Materials  
 This repository contains practical Jupyter/Colab notebooks developed for the course *Applied Recommender Systems*.  
-The materials currently include structured practical paths for **Chapter 2: Content-Based Recommendation**, **Chapter 3: Memory-Based Collaborative Filtering**, and **Chapter 4: Model-Based Collaborative Filtering**.
+The materials currently include structured practical paths for **Chapter 2: Content-Based Recommendation**, **Chapter 3: Memory-Based Collaborative Filtering**, **Chapter 4: Model-Based Collaborative Filtering**, and **Chapter 5: Hybrid, Production, and Emerging Recommender Systems**.
 
 ---
 
@@ -80,3 +80,15 @@ Start with:
 1. Model-based collaborative filtering with latent factors, SVD, ALS, NMF, k selection, MAE, and RMSE
 
 The Chapter 4 notebook contains simple examples and three end-of-notebook challenges.
+
+---
+
+## Recommended Chapter 5 Practical Path
+
+The Chapter 5 practical material now lives in [`chapter_05_hybrid_production_emerging/`](./chapter_05_hybrid_production_emerging/).
+
+Start with:
+
+1. Hybrid strategies (weighted, switching, mixed, cascade), a small two-stage production pipeline, explanations, and three challenges
+
+The Chapter 5 notebook contains simple examples and three end-of-notebook challenges.
